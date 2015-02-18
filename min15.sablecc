@@ -1,0 +1,208 @@
+Helpers
+
+  upper = ['A'..'Z'];
+  lower = ['a'..'z'];
+  digit = ['0'..'9'];
+
+  name_char = [[upper + lower] + digit];
+
+  string_char = [[32..126]-['\'+'"']] | '\"' | '\\';
+
+  cr = 13;
+  lf = 10;
+  tab = 9;
+  
+  not_eol = [[0..0xffff]-[cr+lf]];
+
+Tokens
+
+  class = 'class';
+  super = 'super';
+  var = 'var';
+  fun = 'fun';
+  intern = 'intern';
+  end = 'end';
+  do = 'do';
+  while = 'while';
+  if = 'if';
+  then = 'then';
+  else = 'else';
+  return = 'return';
+  is = 'is';
+  isa = 'isa';
+  as = 'as';
+  new = 'new';
+  null = 'null';
+  false = 'false';
+  true = 'true';
+  self = 'self';
+  and = 'and';
+  or = 'or';
+  not = 'not';
+  
+  l_par = '(';
+  r_par = ')';
+  plus = '+';
+  minus = '-';
+  star = '*';
+  slash = '/';
+  percent = '%';
+  eq = '=';
+  neq = '!=';
+  lt = '<';
+  gt = '>';
+  lteq = '<=';
+  gteq = '>=';
+  
+  comma = ',';
+  colon = ':';
+  dot = '.';
+
+  id = lower name_char*;
+  class_name = upper name_char*;
+  field_name = '_' lower name_char*;
+  invalid_field_name = '_' name_char*;
+
+  number = digit+;
+  invalid_number = digit name_char*;
+
+  string = '"' string_char* '"';
+  invalid_string = '"' string_char*;
+
+  eol = cr | lf | cr lf;
+
+  blank = (' ' | tab)+;
+  comment = '#' not_eol*;
+
+Ignored Tokens
+    blank, comment;
+
+
+Productions
+
+  file =
+    class_def* stmts;
+
+  class_def =
+    [class_keyword]:class class_name [eol1]:eol super_decl? member* end [eol2]:eol;
+
+  super_decl =
+    super class_name eol;
+
+  member =
+    {field} var field_name eol |
+    {method} fun id l_par params? r_par return_decl? [eol1]:eol? do [eol2]:eol stmts end [eol3]:eol |
+    {operator} fun operator l_par params? r_par return_decl? [eol1]:eol? do [eol2]:eol stmts end [eol3]:eol |
+    {intern_method} intern fun id l_par params? r_par return_decl? eol |
+    {intern_operator} intern fun operator l_par params? r_par return_decl? eol;
+
+  params =
+    [eol1]:eol? param additional_param* [eol2]:eol?;
+    
+  additional_param =
+    comma eol? param;
+    
+  param =
+    id colon class_name;
+    
+  return_decl =
+    colon class_name;
+
+  operator =
+    {eq} eq |
+    {neq} neq |
+    {lt} lt |
+    {gt} gt |
+    {lteq} lteq |
+    {gteq} gteq |
+    {plus} plus |
+    {minus} minus |
+    {star} star |
+    {slash} slash |
+    {percent} percent;
+    
+  stmts =
+    stmt*;
+
+  stmt =
+    {empty} eol |
+    {var_def} var id colon class_name eol |
+    {var_init} var id eq [eol1]:eol? exp [eol2]:eol |
+    {var_assign} id eq [eol1]:eol? exp [eol2]:eol |
+    {field_assign} field_name eq [eol1]:eol? exp [eol2]:eol |
+    {call} call eol |
+    {self_call} self_call eol |
+    {while} while [eol1]:eol? exp [eol2]:eol? do [eol3]:eol stmts end [eol4]:eol |
+    {if} if [eol1]:eol? exp [eol2]:eol? then [eol3]:eol stmts else_part? end [eol4]:eol |
+    {return} return exp? eol;
+    
+  else_part =
+    else eol stmts;
+
+  exp =
+    {or} exp or eol? conjunction |
+    {simple} conjunction;
+
+  conjunction =
+    {and} conjunction and eol? comparison |
+    {simple} comparison;
+
+  comparison =
+    {eq} comparison eq eol? arith_exp |
+    {neq} comparison neq eol? arith_exp |
+    {lt} comparison lt eol? arith_exp |
+    {gt} comparison gt eol? arith_exp |
+    {lteq} comparison lteq eol? arith_exp |
+    {gteq} comparison gteq eol? arith_exp |
+    {is} comparison is eol? arith_exp |
+    {simple} arith_exp;
+
+  arith_exp =
+    {add} arith_exp plus eol? factor |
+    {sub} arith_exp minus eol? factor |
+    {simple} factor;
+
+  factor =
+    {mul} factor star eol? right_unary_exp |
+    {div} factor slash eol? right_unary_exp |
+    {mod} factor percent eol? right_unary_exp |
+    {simple} right_unary_exp;
+
+  left_unary_exp =
+    {not} not left_unary_exp |
+    {neg} minus left_unary_exp |
+    {simple} right_unary_exp;
+
+  right_unary_exp =
+    {call} call |
+    {isa} right_unary_exp isa class_name |
+    {as} right_unary_exp as class_name |
+    {simple} term;
+
+  term =
+    {self_call} self_call |
+    {par} l_par [eol1]:eol? exp [eol2]:eol? r_par |
+    {new} new class_name |
+    {field} field_name |
+    {var} id |
+    {num} number |
+    {null} null |
+    {self} self |
+    {true} true |
+    {false} false |
+    {string} string;
+
+  call =
+    right_unary_exp dot eol? id l_par args? r_par;
+
+  self_call =
+    id l_par args? r_par;
+
+  args =
+    [eol1]:eol? arg additional_arg* [eol2]:eol?;    
+    
+  additional_arg =
+    comma eol? arg;
+    
+  arg =
+    exp;
