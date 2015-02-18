@@ -2,6 +2,7 @@
  * Created by Antoine-Ali on 18/02/2015.
  */
 
+import Interpreter.Min15Interpreter;
 import min15.lexer.Lexer;
 import min15.lexer.LexerException;
 import min15.node.Node;
@@ -19,7 +20,7 @@ public class Program {
         if (args.length == 0)
         {
             //Si pas d'argument, on lit depuis l'entrée standard
-            in = new InputStreamReader(System.setIn());
+            in = new InputStreamReader(System.in);
         }
         else if (args.length == 1)
         {
@@ -70,5 +71,20 @@ public class Program {
             System.exit(1);
         }
 
+        Min15Interpreter interpreter = new Min15Interpreter();
+
+        try
+        {
+            interpreter.Visit(rootNode);
+        }
+        catch(Exception e)
+        {
+            System.out.flush();
+            System.err.println("[ERREUR][INTERPRETEUR] : " + e.getMessage() + ".");
+            interpreter.PrintStackTrace();
+            System.exit(1);
+        }
+
+        System.exit(0);
     }
 }
