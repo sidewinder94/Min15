@@ -3,6 +3,7 @@
  */
 
 import Interpreter.Min15Interpreter;
+import min15.exceptions.InterpreterException;
 import min15.lexer.Lexer;
 import min15.lexer.LexerException;
 import min15.node.Node;
@@ -77,7 +78,7 @@ public class Program {
         {
             interpreter.Visit(rootNode);
         }
-        catch(Exception e)
+        catch(InterpreterException e)
         {
             System.out.flush();
             System.err.println("[ERREUR][INTERPRETEUR] : " + e.getMessage() + ".");

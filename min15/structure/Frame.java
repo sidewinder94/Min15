@@ -45,7 +45,7 @@ public class Frame
         return _invokedMethod;
     }
 
-    public Frame getPreviousFrame() {
+    public Frame GetPreviousFrame() {
         return _previousFrame;
     }
 
