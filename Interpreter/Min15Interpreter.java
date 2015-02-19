@@ -180,7 +180,8 @@ public class Min15Interpreter extends DepthFirstAdapter
     //endregion
 
     //region Overrides
-    public void CheckIfTypeExists(Class klass)
+    //region Definitions
+    private void CheckIfTypeExists(Class klass)
     {
         this._primitiveClassInfo.put(klass, this._classTable.GetClassInfoOrNull(Object.class));
         if(this._primitiveClassInfo.get(klass) == null)
@@ -276,7 +277,7 @@ public class Min15Interpreter extends DepthFirstAdapter
     {
         Visit(node.getParam());
     }
-
+    //endregion
 
     //region Operators
     //Pouvoir marquer les operateurs comme tels dans la grammaire et leur ajouter une interface mettant a disposition une méthode getOperator pourrait réduire la duplication de code (caseIOperator ou casePOperator)
