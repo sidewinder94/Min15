@@ -433,7 +433,7 @@ public class Min15Interpreter extends DepthFirstAdapter
 
     //endregion
 
-    
+
 
     //endregion
 }
