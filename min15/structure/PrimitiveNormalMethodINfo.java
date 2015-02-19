@@ -62,7 +62,7 @@ public class PrimitiveNormalMethodInfo extends MethodInfo
 
     @Override
     public String GetName() {
-        this._definition.getId().getText();
+        return this._definition.getId().getText();
     }
 
     @Override

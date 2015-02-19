@@ -75,6 +75,15 @@ public class Frame
         return this._varNameToValueMap.get(name);
     }
 
+    public Instance GetParameterValueWithoutId(String name)
+    {
+        if(!this._varNameToValueMap.containsKey(name))
+        {
+            throw new RuntimeException("Paramètre non défini");
+        }
+
+        return this._varNameToValueMap.get(name);
+    }
     public Token GetCurrentLocation()
     {
         return this._currentLocation;

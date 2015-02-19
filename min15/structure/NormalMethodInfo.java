@@ -28,6 +28,6 @@ public class NormalMethodInfo extends MethodInfo
     @Override
     public void Execute(Min15Interpreter interpreter)
     {
-        Min15Interpreter.Visit(this._definition.getStmts());
+        interpreter.Visit(this._definition.getStmts());
     }
 }

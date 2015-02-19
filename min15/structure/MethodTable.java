@@ -59,11 +59,11 @@ public class MethodTable
         }
         else if (definition instanceof AOperatorMember)
         {
-            methodInfo = new OperatorMethodInfo(this, params, (AOperatorMember)definition, operatorToken);
+            methodInfo = new OperatorMethodInfo(this, (AOperatorMember)definition, params,  operatorToken);
         }
         else if (definition instanceof AInternOperatorMember)
         {
-            methodInfo = new PrimitiveOperatorMethodInfo(this, (AInternOperatorMember)params, definition, operatorToken);
+            methodInfo = new PrimitiveOperatorMethodInfo(this, (AInternOperatorMember)definition, params, operatorToken);
         }
         else
         {
