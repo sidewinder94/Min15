@@ -5,7 +5,7 @@ package min15.node;
 import min15.analysis.*;
 
 @SuppressWarnings("nls")
-public final class APercentOperator extends POperator
+public final class APercentOperator extends POperator implements IOperator
 {
     private TPercent _percent_;
 
@@ -91,5 +91,11 @@ public final class APercentOperator extends POperator
         }
 
         throw new RuntimeException("Not a child.");
+    }
+
+    @Override
+    public Token GetOperator()
+    {
+        return getPercent();
     }
 }

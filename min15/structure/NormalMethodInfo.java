@@ -2,6 +2,7 @@ package min15.structure;
 
 import Interpreter.Min15Interpreter;
 import min15.node.AMethodMember;
+import min15.node.PParam;
 import min15.node.TId;
 
 import java.util.List;

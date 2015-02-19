@@ -76,6 +76,10 @@ public class ClassTable {
         {
             return this._nameToClassInfoMap.get("String");
         }
+        if (klass == Object.class)
+        {
+            return this._nameToClassInfoMap.get("Object");
+        }
         return null;
     }
 

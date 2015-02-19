@@ -5,7 +5,7 @@ package min15.node;
 import min15.analysis.*;
 
 @SuppressWarnings("nls")
-public final class APlusOperator extends POperator
+public final class APlusOperator extends POperator implements IOperator
 {
     private TPlus _plus_;
 
@@ -91,5 +91,11 @@ public final class APlusOperator extends POperator
         }
 
         throw new RuntimeException("Not a child.");
+    }
+
+    @Override
+    public Token GetOperator()
+    {
+        return getPlus();
     }
 }

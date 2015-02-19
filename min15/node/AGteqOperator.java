@@ -5,7 +5,7 @@ package min15.node;
 import min15.analysis.*;
 
 @SuppressWarnings("nls")
-public final class AGteqOperator extends POperator
+public final class AGteqOperator extends POperator implements IOperator
 {
     private TGteq _gteq_;
 
@@ -91,5 +91,11 @@ public final class AGteqOperator extends POperator
         }
 
         throw new RuntimeException("Not a child.");
+    }
+
+    @Override
+    public Token GetOperator()
+    {
+        return getGteq();
     }
 }
