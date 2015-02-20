@@ -11,6 +11,7 @@ import min15.exceptions.ReturnException;
 import min15.node.*;
 import min15.structure.*;
 import min15.analysis.DepthFirstAdapter;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 
 public class Min15Interpreter extends DepthFirstAdapter
@@ -26,7 +27,7 @@ public class Min15Interpreter extends DepthFirstAdapter
 
     private List<PExp> _expList;
 
-    private Instance _expEVal;
+    private Instance _expEval;
 
     private Frame _currentFrame; //proposition de traduction => Contexte (d'exécution)
 
@@ -65,6 +66,12 @@ public class Min15Interpreter extends DepthFirstAdapter
     //endregion
 
     //region "Utility" Methods
+    private <T extends ClassInfo> T GetPrimitiveTypeClassInfo(Class klass)
+    {
+        return (T)this._primitiveClassInfo.get(klass);
+    }
+
+
     private List<TId> GetParams(PParams node)
     {
         this._idList = new LinkedList<>();
@@ -82,15 +89,15 @@ public class Min15Interpreter extends DepthFirstAdapter
         return operatorToken;
     }
 
-    private Instance GetExpEVal(Node node)
+    private Instance GetExpEval(Node node)
     {
         Visit(node);
-        Instance expEval = this._expEVal;
-        this._expEVal = null;
+        Instance expEval = this._expEval;
+        this._expEval = null;
         return expEval;
     }
 
-    private List<PExp> GetExpList(AArgs node)
+    private List<PExp> GetExpList(PArgs node)
     {
         this._expList = new LinkedList<>();
         Visit(node);
@@ -135,7 +142,7 @@ public class Min15Interpreter extends DepthFirstAdapter
     public void IntegerToS(PrimitiveNormalMethodInfo primitiveNormalMethodInfo)
     {
         IntegerInstance self = (IntegerInstance)this._currentFrame.GetReceiver();
-        this._currentFrame.SetReturnValue(((StringClassInfo)this._primitiveClassInfo.get(String.class)).NewString(self.GetValue().toString()));
+        this._currentFrame.SetReturnValue((this.<StringClassInfo>GetPrimitiveTypeClassInfo(String.class)).NewString(self.GetValue().toString()));
     }
 
     public void StringToSystemOut(PrimitiveNormalMethodInfo primitiveNormalMethodInfo)
@@ -156,7 +163,7 @@ public class Min15Interpreter extends DepthFirstAdapter
 
         BigInteger left = self.GetValue();
         BigInteger right = ((IntegerInstance) arg).GetValue();
-        this._currentFrame.SetReturnValue(((IntegerClassInfo)this._primitiveClassInfo.get(Integer.class)).NewInteger(left.add(right)));
+        this._currentFrame.SetReturnValue((this.<IntegerClassInfo>GetPrimitiveTypeClassInfo(Integer.class)).NewInteger(left.add(right)));
     }
 
     public void StringPlus(MethodInfo methodInfo)
@@ -175,12 +182,9 @@ public class Min15Interpreter extends DepthFirstAdapter
         String left = self.GetValue();
         String right = ((StringInstance) arg).GetValue();
 
-        this._currentFrame.SetReturnValue(((StringClassInfo)this._primitiveClassInfo.get(String.class)).NewString(left.concat(right)));
+        this._currentFrame.SetReturnValue((this.<StringClassInfo>GetPrimitiveTypeClassInfo(String.class)).NewString(left.concat(right)));
     }
-    //endregion
 
-    //region Overrides
-    //region Definitions
     private void CheckIfTypeExists(Class klass)
     {
         this._primitiveClassInfo.put(klass, this._classTable.GetClassInfoOrNull(Object.class));
@@ -198,6 +202,12 @@ public class Min15Interpreter extends DepthFirstAdapter
         CheckIfTypeExists(String.class);
     }
 
+    //endregion
+
+    //region Overrides
+
+    //region Root Node (File)
+
     @Override
     public void caseAFile(AFile node)
     {
@@ -212,6 +222,10 @@ public class Min15Interpreter extends DepthFirstAdapter
         Visit(node.getStmts());
     }
 
+    //endregion
+
+    //region Class Definition
+
     @Override
     public void inAClassDef(AClassDef node)
     {
@@ -223,6 +237,20 @@ public class Min15Interpreter extends DepthFirstAdapter
     {
         this._currentClassInfo = null;
     }
+
+    //endregion
+
+    //region Super Declaration
+
+    @Override
+    public void caseASuperDecl(ASuperDecl node)
+    {
+        //No need for definition, node is already checked in while creating class
+    }
+
+    //endregion
+
+    //region Member
 
     @Override
     public void caseAFieldMember(AFieldMember node)
@@ -260,32 +288,51 @@ public class Min15Interpreter extends DepthFirstAdapter
         this._currentClassInfo.GetMethodTable().Add(node, params, operatorToken);
     }
 
+    //endregion
+
+    //region Parameters
+
     @Override
     public void caseAParams(AParams node)
     {
         Visit(node.getParam());
     }
 
-    @Override
-    public void caseAParam(AParam node)
-    {
-        this._idList.add(node.getId());
-    }
+    //endregion
+
+    //region Additional Parameters
 
     @Override
     public void caseAAdditionalParam(AAdditionalParam node)
     {
         Visit(node.getParam());
     }
+
+    //endregion
+
+    //region Parameter
+
+    @Override
+    public void caseAParam(AParam node)
+    {
+        this._idList.add(node.getId());
+        //TODO : Complete for type safety
+    }
+
+    //endregion
+
+    //region Return Declaration
+
+    @Override
+    public void caseAReturnDecl(AReturnDecl node)
+    {
+        //TODO : Implement for type safety
+    }
+
     //endregion
 
     //region Operators
     //Pouvoir marquer les operateurs comme tels dans la grammaire et leur ajouter une interface mettant a disposition une méthode getOperator pourrait réduire la duplication de code (caseIOperator ou casePOperator)
-    @Override
-    public void caseAPlusOperator(APlusOperator node)
-    {
-        this._operatorToken = node.getPlus();
-    }
 
     @Override
     public void caseAEqOperator(AEqOperator node)
@@ -323,6 +370,13 @@ public class Min15Interpreter extends DepthFirstAdapter
         this._operatorToken = node.getGteq();
     }
 
+
+    @Override
+    public void caseAPlusOperator(APlusOperator node)
+    {
+        this._operatorToken = node.getPlus();
+    }
+
     @Override
     public void caseAMinusOperator(AMinusOperator node)
     {
@@ -346,38 +400,31 @@ public class Min15Interpreter extends DepthFirstAdapter
     {
         this._operatorToken = node.getPercent();
     }
-    //endregion
-
-    //region Assignements
-    @Override
-    public void caseAVarAssignStmt(AVarAssignStmt node)
-    {
-        Instance value = GetExpEVal(node.getExp());
-        this._currentFrame.SetVar(node.getId(), value);
-    }
-
-    @Override
-    public void caseAFieldAssignStmt(AFieldAssignStmt node)
-    {
-        Instance value = GetExpEVal(node.getExp());
-        Instance self = this._currentFrame.GetReceiver();
-        self.SetField(node.getFieldName(), value);
-    }
 
     //endregion
 
-    //region Flow Control
+    //region Statements
+    @Override
+    public void caseAStmts(AStmts node)
+    {
+        node.getStmt().forEach(this::Visit);
+    }
+    //endregion
+
+    //region Statement
+
     private Instance CheckBooleanExpressionValidity(PStmt node)
     {
-        Instance value = GetExpEVal(((AIfStmt)node).getExp());
+        Boolean ifStatement = node instanceof AIfStmt;
+        Instance value = GetExpEval(ifStatement ? ((AIfStmt) node).getExp() : ((AWhileStmt) node).getExp());
         if (value == null)
         {
-            throw new InterpreterException("L'expression est nulle", node.getEol1());
+            throw new InterpreterException("L'expression est nulle", ifStatement ? ((AIfStmt) node).getEol1() : ((AWhileStmt) node).getEol1());
         }
 
         if (!value.is_a(this._primitiveClassInfo.get(Boolean.class)))
         {
-            throw new InterpreterException("l'expression n'est pas booléenne", node.getEol1());
+            throw new InterpreterException("l'expression n'est pas booléenne", ifStatement ? ((AIfStmt) node).getEol1() : ((AWhileStmt) node).getEol1());
         }
         return value;
     }
@@ -390,7 +437,7 @@ public class Min15Interpreter extends DepthFirstAdapter
         {
             Instance value = CheckBooleanExpressionValidity(node);
 
-            if (value == ((BooleanClassInfo)this._primitiveClassInfo.get(Boolean.class)).GetFalse())
+            if (value == (this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class)).GetFalse())
             {
                 break;
             }
@@ -405,7 +452,7 @@ public class Min15Interpreter extends DepthFirstAdapter
     {
         Instance value =CheckBooleanExpressionValidity(node);
 
-        if (value == ((BooleanClassInfo)this._primitiveClassInfo.get(Boolean.class)).GetTrue())
+        if (value == (this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class)).GetTrue())
         {
             Visit(node.getStmts());
         }
@@ -424,7 +471,7 @@ public class Min15Interpreter extends DepthFirstAdapter
         }
 
         PExp exp = node.getExp();
-        Instance value = GetExpEVal(exp);
+        Instance value = GetExpEval(exp);
         this._currentFrame.SetReturnValue(value);
 
         throw new ReturnException();
@@ -432,10 +479,708 @@ public class Min15Interpreter extends DepthFirstAdapter
     }
 
 
+    @Override
+    public void caseACallStmt(ACallStmt node)
+    {
+        GetExpEval(node.getCall());
+    }
+
+    @Override
+    public void caseASelfCallStmt(ASelfCallStmt node)
+    {
+        GetExpEval(node.getSelfCall());
+    }
+
+    @Override
+    public void caseAVarAssignStmt(AVarAssignStmt node)
+    {
+        Instance value = GetExpEval(node.getExp());
+        this._currentFrame.SetVar(node.getId(), value);
+    }
+
+    @Override
+    public void caseAFieldAssignStmt(AFieldAssignStmt node)
+    {
+        Instance value = GetExpEval(node.getExp());
+        Instance self = this._currentFrame.GetReceiver();
+        self.SetField(node.getFieldName(), value);
+    }
+
+
+
+    @Override
+    public void caseAEmptyStmt(AEmptyStmt node)
+    {}
+
+    @Override
+    public void caseAVarDefStmt(AVarDefStmt node)
+    {
+        super.caseAVarDefStmt(node);
+    }
+
+    @Override
+    public void caseAVarInitStmt(AVarInitStmt node)
+    {
+        super.caseAVarInitStmt(node);
+    }
+
+
     //endregion
 
+    //region Else Part
+
+    @Override
+    public void caseAElsePart(AElsePart node)
+    {
+        Visit(node.getStmts());
+    }
+
+    //endregion
+
+    //region Expression
+
+    @Override
+    public void caseAOrExp(AOrExp node)
+    {
+        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        Instance left = GetExpEval(node.getExp());
+        Instance right = GetExpEval(node.getConjunction());
+
+        if (left.is_a(info))
+        {
+            throw new InterpreterException("Le membre gauche de l'instruction AND n'est pas un booléen", node.getOr());
+        }
+        if (right.is_a(info))
+        {
+            throw new InterpreterException("Le membre gauche de l'instruction AND n'est pas un booléen", node.getOr());
+        }
+
+        if ((left == info.GetTrue()) || (right == info.GetTrue()))
+        {
+            this._expEval = info.GetTrue();
+        }
+        else
+        {
+            this._expEval = info.GetFalse();
+        }
+    }
+
+    @Override
+    public void caseASimpleExp(ASimpleExp node)
+    {
+        Visit(node.getConjunction());
+    }
 
 
+    //endregion
+
+    //region Conjunction
+
+    @Override
+    public void caseAAndConjunction(AAndConjunction node)
+    {
+        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        Instance left = GetExpEval(node.getConjunction());
+        Instance right = GetExpEval(node.getComparison());
+
+        if (left.is_a(info))
+        {
+            throw new InterpreterException("Le membre gauche de l'instruction AND n'est pas un booléen", node.getAnd());
+        }
+        if (right.is_a(info))
+        {
+            throw new InterpreterException("Le membre gauche de l'instruction AND n'est pas un booléen", node.getAnd());
+        }
+
+        if (left == right)
+        {
+            this._expEval = info.GetTrue();
+        }
+        else
+        {
+            this._expEval = info.GetFalse();
+        }
+
+    }
+
+    @Override
+    public void caseASimpleConjunction(ASimpleConjunction node)
+    {
+        Visit(node.getComparison());
+    }
+
+    //endregion
+
+    //region Comparison Expressions
+
+    @Override
+    public void caseAIsComparison(AIsComparison node)
+    {
+        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        Instance left = GetExpEval(node.getComparison());
+        Instance right = GetExpEval(node.getArithExp());
+        if (left == right)
+        {
+            this._expEval = info.GetTrue();
+        }
+        else
+        {
+            this._expEval = info.GetFalse();
+        }
+    }
+
+    @Override
+    public void caseAEqComparison(AEqComparison node)
+    {
+        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        Instance left = GetExpEval(node.getComparison());
+        Instance right = GetExpEval(node.getArithExp());
+        if (left == null || right == null)
+        {
+            if(left == right)
+            {
+                this._expEval = info.GetTrue();
+            }
+            else
+            {
+                this._expEval = info.GetFalse();
+            }
+        }
+        else
+        {
+            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getEq());
+            Frame frame = new Frame(this._currentFrame, left, invokedMethod);
+            frame.SetParam(right);
+            this._expEval = Execute(invokedMethod, frame, node.getEq());
+        }
+    }
+
+    @Override
+    public void caseANeqComparison(ANeqComparison node)
+    {
+        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        Instance left = GetExpEval(node.getComparison());
+        Instance right = GetExpEval(node.getArithExp());
+        if (left == null || right == null)
+        {
+            if(left != right)
+            {
+                this._expEval = info.GetTrue();
+            }
+            else
+            {
+                this._expEval = info.GetFalse();
+            }
+        }
+        else
+        {
+            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getNeq());
+            Frame frame = new Frame(this._currentFrame, left, invokedMethod);
+            frame.SetParam(right);
+            this._expEval = Execute(invokedMethod, frame, node.getNeq());
+        }
+    }
+
+    @Override
+    public void caseALtComparison(ALtComparison node)
+    {
+        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        Instance left = GetExpEval(node.getComparison());
+        Instance right = GetExpEval(node.getArithExp());
+        if (left == null || right == null)
+        {
+            this._expEval = info.GetFalse();
+        }
+        else
+        {
+            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getLt());
+            Frame frame = new Frame(this._currentFrame, left, invokedMethod);
+            frame.SetParam(right);
+            this._expEval = Execute(invokedMethod, frame, node.getLt());
+        }
+    }
+
+    @Override
+    public void caseAGtComparison(AGtComparison node)
+    {
+        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        Instance left = GetExpEval(node.getComparison());
+        Instance right = GetExpEval(node.getArithExp());
+        if (left == null || right == null)
+        {
+            this._expEval = info.GetFalse();
+        }
+        else
+        {
+            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getGt());
+            Frame frame = new Frame(this._currentFrame, left, invokedMethod);
+            frame.SetParam(right);
+            this._expEval = Execute(invokedMethod, frame, node.getGt());
+        }
+    }
+
+    @Override
+    public void caseALteqComparison(ALteqComparison node)
+    {
+        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        Instance left = GetExpEval(node.getComparison());
+        Instance right = GetExpEval(node.getArithExp());
+        if (left == null || right == null)
+        {
+            if(left == right)
+            {
+                this._expEval = info.GetTrue();
+            }
+            else
+            {
+                this._expEval = info.GetFalse();
+            }
+        }
+        else
+        {
+            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getLteq());
+            Frame frame = new Frame(this._currentFrame, left, invokedMethod);
+            frame.SetParam(right);
+            this._expEval = Execute(invokedMethod, frame, node.getLteq());
+        }
+    }
+
+    @Override
+    public void caseAGteqComparison(AGteqComparison node)
+    {
+        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        Instance left = GetExpEval(node.getComparison());
+        Instance right = GetExpEval(node.getArithExp());
+        if (left == null || right == null)
+        {
+            if(left == right)
+            {
+                this._expEval = info.GetTrue();
+            }
+            else
+            {
+                this._expEval = info.GetFalse();
+            }
+        }
+        else
+        {
+            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getGteq());
+            Frame frame = new Frame(this._currentFrame, left, invokedMethod);
+            frame.SetParam(right);
+            this._expEval = Execute(invokedMethod, frame, node.getGteq());
+        }
+    }
+
+    @Override
+    public void caseASimpleComparison(ASimpleComparison node)
+    {
+        this._expEval = GetExpEval(node.getArithExp());
+    }
+
+    //endregion
+
+    //region Arithmetic Expressions
+
+    @Override
+    public void caseAAddArithExp(AAddArithExp node)
+    {
+        Instance left = GetExpEval(node.getArithExp());
+        Instance right = GetExpEval(node.getFactor());
+
+        if (left == null || right == null)
+        {
+            String side = "gauche";
+            if (right == null)
+            {
+                side = "droite";
+            }
+
+            throw new InterpreterException("L'argument de " + side + " de la méthode + est nul", node.getPlus());
+        }
+        else
+        {
+            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getPlus());
+            Frame frame = new Frame(this._currentFrame, left, invokedMethod);
+            frame.SetParam(right);
+            this._expEval = Execute(invokedMethod, frame, node.getPlus());
+        }
+    }
+
+    @Override
+    public void caseASubArithExp(ASubArithExp node)
+    {
+        Instance left = GetExpEval(node.getArithExp());
+        Instance right = GetExpEval(node.getFactor());
+
+        if (left == null || right == null)
+        {
+            String side = "gauche";
+            if (right == null)
+            {
+                side = "droite";
+            }
+
+            throw new InterpreterException("L'argument de " + side + " de la méthode - est nul", node.getMinus());
+        }
+        else
+        {
+            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getMinus());
+            Frame frame = new Frame(this._currentFrame, left, invokedMethod);
+            frame.SetParam(right);
+            this._expEval = Execute(invokedMethod, frame, node.getMinus());
+        }
+    }
+
+    @Override
+    public void caseASimpleArithExp(ASimpleArithExp node)
+    {
+        Visit(node.getFactor());
+    }
+
+
+    //endregion
+
+    //region Factors
+
+    @Override
+    public void caseAMulFactor(AMulFactor node)
+    {
+        Instance left = GetExpEval(node.getRightUnaryExp());
+        Instance right = GetExpEval(node.getFactor());
+
+        if (left == null || right == null)
+        {
+            String side = "gauche";
+            if (right == null)
+            {
+                side = "droite";
+            }
+
+            throw new InterpreterException("L'argument de " + side + " de la méthode + est nul", node.getStar());
+        }
+        else
+        {
+            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getStar());
+            Frame frame = new Frame(this._currentFrame, left, invokedMethod);
+            frame.SetParam(right);
+            this._expEval = Execute(invokedMethod, frame, node.getStar());
+        }
+    }
+
+    @Override
+    public void caseADivFactor(ADivFactor node)
+    {
+        Instance left = GetExpEval(node.getRightUnaryExp());
+        Instance right = GetExpEval(node.getFactor());
+
+        if (left == null || right == null)
+        {
+            String side = "gauche";
+            if (right == null)
+            {
+                side = "droite";
+            }
+
+            throw new InterpreterException("L'argument de " + side + " de la méthode + est nul", node.getSlash());
+        }
+        else
+        {
+            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getSlash());
+            Frame frame = new Frame(this._currentFrame, left, invokedMethod);
+            frame.SetParam(right);
+            this._expEval = Execute(invokedMethod, frame, node.getSlash());
+        }
+    }
+
+    @Override
+    public void caseAModFactor(AModFactor node)
+    {
+        Instance left = GetExpEval(node.getRightUnaryExp());
+        Instance right = GetExpEval(node.getFactor());
+
+        if (left == null || right == null)
+        {
+            String side = "gauche";
+            if (right == null)
+            {
+                side = "droite";
+            }
+
+            throw new InterpreterException("L'argument de " + side + " de la méthode + est nul", node.getPercent());
+        }
+        else
+        {
+            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getPercent());
+            Frame frame = new Frame(this._currentFrame, left, invokedMethod);
+            frame.SetParam(right);
+            this._expEval = Execute(invokedMethod, frame, node.getPercent());
+        }
+    }
+
+    @Override
+    public void caseASimpleFactor(ASimpleFactor node)
+    {
+        Visit(node.getRightUnaryExp());
+    }
+
+
+    //endregion
+
+    //region Right Unary Expressions
+
+    @Override
+    public void caseACallRightUnaryExp(ACallRightUnaryExp node)
+    {
+        Visit(node.getCall());
+    }
+
+    @Override
+    public void caseAIsaRightUnaryExp(AIsaRightUnaryExp node)
+    {
+        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        Instance left = GetExpEval(node.getRightUnaryExp());
+        ClassInfo right = this._classTable.Get(node.getClassName());
+
+        if (left == null)
+        {
+            this._expEval = info.GetFalse();
+        }
+        else if (left.is_a(right))
+        {
+            this._expEval = info.GetTrue();
+        }
+        else
+        {
+            this._expEval = info.GetFalse();
+        }
+    }
+
+    @Override
+    public void caseAAsRightUnaryExp(AAsRightUnaryExp node)
+    {
+        //TODO : Implémenter
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void caseASimpleRightUnaryExp(ASimpleRightUnaryExp node)
+    {
+        Visit(node.getTerm());
+    }
+
+
+    //endregion
+
+    //region Left Unary Expressions
+
+    @Override
+    public void caseANotLeftUnaryExp(ANotLeftUnaryExp node)
+    {
+        Instance value = GetExpEval(node.getLeftUnaryExp());
+        if(value == null)
+        {
+            throw new InterpreterException("expression is null", node.getNot());
+        }
+    }
+
+    @Override
+    public void caseANegLeftUnaryExp(ANegLeftUnaryExp node)
+    {
+        Instance value = GetExpEval(node.getLeftUnaryExp());
+        if(!(value.is_a(this._primitiveClassInfo.get(Integer.class))))
+        {
+            throw new InterpreterException("IL est seulement possible d'avoir un entien négatif", node.getMinus());
+        }
+
+        (this.<IntegerClassInfo>GetPrimitiveTypeClassInfo(Integer.class))
+                .NewInteger(((IntegerInstance) value).GetValue().multiply(new BigInteger("-1")));
+    }
+
+    @Override
+    public void caseASimpleLeftUnaryExp(ASimpleLeftUnaryExp node)
+    {
+        this._expEval = GetExpEval(node.getRightUnaryExp());
+    }
+
+
+    //endregion
+
+    //region Terms
+
+    @Override
+    public void caseASelfCallTerm(ASelfCallTerm node)
+    {
+        super.caseASelfCallTerm(node);
+    }
+
+    @Override
+    public void caseAParTerm(AParTerm node)
+    {
+        super.caseAParTerm(node);
+    }
+
+    @Override
+    public void caseANewTerm(ANewTerm node)
+    {
+        ClassInfo classInfo = this._classTable.Get(node.getClassName());
+
+        String name = classInfo.GetName();
+        if (name.equals("Boolean") ||
+            name.equals("Integer") ||
+            name.equals("String"))
+        {
+            throw new InterpreterException("Utilisation invalide de l'opérateur new", node.getNew());
+        }
+
+        this._expEval = classInfo.NewInstance();
+    }
+
+    @Override
+    public void caseAFieldTerm(AFieldTerm node)
+    {
+        Instance self = this._currentFrame.GetReceiver();
+        this._expEval = self.GetField(node.getFieldName());
+    }
+
+    @Override
+    public void caseAVarTerm(AVarTerm node)
+    {
+        this._expEval = this._currentFrame.GetVar(node.getId());
+    }
+
+    @Override
+    public void caseANumTerm(ANumTerm node)
+    {
+        this._expEval = (this.<IntegerClassInfo>GetPrimitiveTypeClassInfo(Integer.class))
+                .NewInteger(new BigInteger(node.getNumber().getText()));
+    }
+
+    @Override
+    public void caseANullTerm(ANullTerm node)
+    {
+        this._expEval = null;
+    }
+
+    @Override
+    public void caseASelfTerm(ASelfTerm node)
+    {
+        this._expEval = this._currentFrame.GetReceiver();
+    }
+
+    @Override
+    public void caseATrueTerm(ATrueTerm node)
+    {
+        this._expEval = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class).GetTrue();
+    }
+
+    @Override
+    public void caseAFalseTerm(AFalseTerm node)
+    {
+        this._expEval = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class).GetFalse();
+    }
+
+    @Override
+    public void caseAStringTerm(AStringTerm node)
+    {
+        String string = node.getString().getText();
+        this._expEval = this.<StringClassInfo>GetPrimitiveTypeClassInfo(String.class)
+                .NewString(string.substring(1, string.length() - 1));
+    }
+
+
+    //endregion
+
+    //region Calls
+
+    @Override
+    public void caseACall(ACall node)
+    {
+        List<PExp> expList = GetExpList(node.getArgs());
+
+        Instance receiver = GetExpEval(node.getRightUnaryExp());
+
+        if (receiver == null)
+        {
+            throw new InterpreterException("La méthode réceptionnant " + node.getId().getText() + " est nulle",
+                    node.getId());
+        }
+
+        MethodInfo invokedMethod = receiver.GetClassInfo().GetMethodTable().GetMethodInfo(node.getId());
+
+        if(invokedMethod.GetParamCount() != expList.size())
+        {
+            throw new InterpreterException("La méthode " + invokedMethod.GetName() +
+                                           "attends " + invokedMethod.GetParamCount() +
+                                           " arguments", node.getId());
+        }
+
+        Frame frame = new Frame(this._currentFrame, receiver, invokedMethod);
+
+        for(PExp exp : expList)
+        {
+            frame.SetParam(GetExpEval(exp));
+        }
+
+        this._expEval = Execute(invokedMethod, frame, node.getId());
+    }
+
+    @Override
+    public void caseASelfCall(ASelfCall node)
+    {
+        List<PExp> expList = GetExpList(node.getArgs());
+
+        Instance receiver = this._currentFrame.GetReceiver();
+
+        if (receiver == null)
+        {
+            throw new InterpreterException("La méthode réceptionnant " + node.getId().getText() + " est nulle",
+                    node.getId());
+        }
+
+        MethodInfo invokedMethod = receiver.GetClassInfo().GetMethodTable().GetMethodInfo(node.getId());
+
+        if(invokedMethod.GetParamCount() != expList.size())
+        {
+            throw new InterpreterException("La méthode " + invokedMethod.GetName() +
+                    "attends " + invokedMethod.GetParamCount() +
+                    " arguments", node.getId());
+        }
+
+        Frame frame = new Frame(this._currentFrame, receiver, invokedMethod);
+
+        for(PExp exp : expList)
+        {
+            frame.SetParam(GetExpEval(exp));
+        }
+
+        this._expEval = Execute(invokedMethod, frame, node.getId());
+    }
+
+
+    //endregion
+
+    //region Arguments
+
+    @Override
+    public void caseAArgs(AArgs node)
+    {
+        Visit(node.getArg());
+        node.getAdditionalArg().forEach(this::Visit);
+    }
+
+    @Override
+    public void caseAAdditionalArg(AAdditionalArg node)
+    {
+        Visit(node.getArg());
+    }
+
+    @Override
+    public void caseAArg(AArg node)
+    {
+        this._expList.add(node.getExp());
+    }
+
+    //endregion
     //endregion
 }
 
