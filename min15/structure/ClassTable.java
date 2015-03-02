@@ -1,5 +1,6 @@
 package min15.structure;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import min15.exceptions.InterpreterException;
 import node.AClassDef;
 import node.TClassName;
@@ -51,6 +52,7 @@ public class ClassTable {
         return this._nameToClassInfoMap.get("Object");
     }
 
+
     public ClassInfo Get(TClassName classNameToken)
     {
         String name = classNameToken.getText();
@@ -62,26 +64,24 @@ public class ClassTable {
         return this._nameToClassInfoMap.get(name);
     }
 
-    public  ClassInfo GetClassInfoOrNull(Class klass)
+    public BooleanClassInfo GetBooleanClassInfoOrNull()
     {
-        if (klass == Integer.class)
-        {
-            return this._nameToClassInfoMap.get("Integer");
-        }
-        if (klass == Boolean.class)
-        {
-            return this._nameToClassInfoMap.get("Boolean");
-        }
-        if (klass == String.class)
-        {
-            return this._nameToClassInfoMap.get("String");
-        }
-        if (klass == Object.class)
-        {
-            return this._nameToClassInfoMap.get("Object");
-        }
-        return null;
+        return (BooleanClassInfo)this._nameToClassInfoMap.get("Boolean");
     }
+
+
+    public IntegerClassInfo GetIntegerClassInfoOrNull()
+    {
+        return (IntegerClassInfo)this._nameToClassInfoMap.get("Integer");
+    }
+
+    public StringClassInfo GetStringClassInfoOrNull()
+    {
+        return (StringClassInfo)this._nameToClassInfoMap.get("String");
+    }
+
+
+
 
 
 

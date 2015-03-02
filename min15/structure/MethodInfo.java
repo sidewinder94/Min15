@@ -1,6 +1,6 @@
 package min15.structure;
 
-import Interpreter.InterpreterEngine;
+import min15.Interpreter.InterpreterEngine;
 import min15.exceptions.InterpreterException;
 import node.TId;
 

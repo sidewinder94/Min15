@@ -1,6 +1,6 @@
 package min15.structure;
 
-import Interpreter.InterpreterEngine;
+import min15.Interpreter.InterpreterEngine;
 import min15.exceptions.InterpreterException;
 import node.AInternMethodMember;
 import node.TId;
@@ -38,7 +38,7 @@ public class PrimitiveNormalMethodInfo extends MethodInfo
             }
             this._operation = Operation.OBJECT_ABORT;
         }
-        else if(className.equals("Integer") && GetName().equals("to_s"))
+        else if(className.equals("Integer") && GetName().equals("toString"))
         {
             if(params.size() != 0)
             {
@@ -46,7 +46,7 @@ public class PrimitiveNormalMethodInfo extends MethodInfo
             }
             this._operation = Operation.INTEGER_TO_S;
         }
-        else if(className.equals("String") && GetName().equals("to_system_out"))
+        else if(className.equals("String") && GetName().equals("toSystemOut"))
         {
             if(params.size() != 0)
             {

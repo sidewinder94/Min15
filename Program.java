@@ -2,10 +2,11 @@
  * Created by Antoine-Ali on 18/02/2015.
  */
 
-import Interpreter.InterpreterEngine;
+import min15.Interpreter.InterpreterEngine;
 import min15.exceptions.InterpreterException;
 import lexer.Lexer;
 import lexer.LexerException;
+import min15.exceptions.SemanticException;
 import node.Node;
 import parser.Parser;
 import parser.ParserException;
@@ -84,6 +85,10 @@ public class Program {
             System.err.println("[ERREUR][INTERPRETEUR] : " + e.getMessage() + ".");
             interpreter.PrintStackTrace();
             System.exit(1);
+        }
+        catch(SemanticException e)
+        {
+            System.err.println("[ERREUR][SEMANTIC] : " + e.getMessage());
         }
 
         System.exit(0);

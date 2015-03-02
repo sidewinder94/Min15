@@ -1,6 +1,6 @@
 package min15.structure;
 
-import Interpreter.InterpreterEngine;
+import min15.Interpreter.InterpreterEngine;
 import min15.exceptions.InterpreterException;
 import node.AInternOperatorMember;
 import node.TId;
@@ -15,8 +15,18 @@ public class PrimitiveOperatorMethodInfo extends MethodInfo
 {
     private static enum Operation
     {
+        STRING_PLUS,
         INTEGER_PLUS,
-        STRING_PLUS;
+        INTEGER_MINUS,
+        INTEGER_MULT,
+        INTEGER_DIV,
+        INTEGER_MOD,
+        INTEGER_LT,
+        INTEGER_LTEQ,
+        INTEGER_GT,
+        INTEGER_GTEQ,
+        INTEGER_EQ,
+        INTEGER_NEQ;
     }
 
     private final AInternOperatorMember _definition;
@@ -38,28 +48,67 @@ public class PrimitiveOperatorMethodInfo extends MethodInfo
         }
 
 
-        if(GetName().equals("+"))
+        if (className.equals("Integer"))
         {
-            if (className.equals("Integer"))
+            if(GetName().equals("+"))
             {
                 this._operation = Operation.INTEGER_PLUS;
             }
-            else if(className.equals("String"))
+            else if(GetName().equals("-"))
+            {
+                this._operation = Operation.INTEGER_MINUS;
+            }
+            else if(GetName().equals("*"))
+            {
+                this._operation = Operation.INTEGER_MULT;
+            }
+            else if(GetName().equals("/"))
+            {
+                this._operation = Operation.INTEGER_DIV;
+            }
+            else if(GetName().equals(">"))
+            {
+                this._operation = Operation.INTEGER_GT;
+            }
+            else if(GetName().equals(">="))
+            {
+                this._operation = Operation.INTEGER_GTEQ;
+            }
+            else if(GetName().equals("<"))
+            {
+                this._operation = Operation.INTEGER_LT;
+            }
+            else if(GetName().equals("<="))
+            {
+                this._operation = Operation.INTEGER_LTEQ;
+            }
+            else if(GetName().equals("=="))
+            {
+                this._operation = Operation.INTEGER_EQ;
+            }
+            else if(GetName().equals("!="))
+            {
+                this._operation = Operation.INTEGER_NEQ;
+            }
+            else
+            {
+                throw new InterpreterException("La méthode " + GetName() + " n'est pas une méthode primive dans la classe " + className, operatorToken);
+            }
+        }
+        else if (className.equals("String"))
+        {
+            if (GetName().equals("+"))
             {
                 this._operation = Operation.STRING_PLUS;
             }
             else
             {
-                throw new InterpreterException("La méthode + n'est pas une méthode primive dans la classe " + className, operatorToken);
+                throw new InterpreterException("La méthode " + GetName() + " n'est pas une méthode primive dans la classe " + className, operatorToken);
             }
-        }
-        else if(GetName().equals("=="))
-        {
-            throw new InterpreterException("La méthode == n'est pas une méthode primitive dans la classe " + className, operatorToken);
         }
         else
         {
-            throw new RuntimeException("Opérateur non géré " + GetName());
+            throw new InterpreterException("La méthode " + GetName() + " n'est pas une méthode primive dans la classe " + className, operatorToken);
         }
     }
 
@@ -75,6 +124,36 @@ public class PrimitiveOperatorMethodInfo extends MethodInfo
         {
             case INTEGER_PLUS:
                 interpreter.IntegerPlus(this);
+                break;
+            case INTEGER_MINUS:
+                interpreter.IntegerMinus(this);
+                break;
+            case INTEGER_MULT:
+                interpreter.IntegerMult(this);
+                break;
+            case INTEGER_DIV:
+                interpreter.IntegerDiv(this);
+                break;
+            case INTEGER_MOD:
+                interpreter.IntegerMod(this);
+                break;
+            case INTEGER_LT:
+                interpreter.IntegerLt(this);
+                break;
+            case INTEGER_LTEQ:
+                interpreter.IntegerLtEq(this);
+                break;
+            case INTEGER_GT:
+                interpreter.IntegerGt(this);
+                break;
+            case INTEGER_GTEQ:
+                interpreter.IntegerGtEq(this);
+                break;
+            case INTEGER_EQ:
+                interpreter.IntegerEq(this);
+                break;
+            case INTEGER_NEQ:
+                interpreter.IntegerNeq(this);
                 break;
             case STRING_PLUS:
                 interpreter.StringPlus(this);

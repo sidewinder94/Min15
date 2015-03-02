@@ -36,7 +36,14 @@ public class MethodTable
         if (definition instanceof AMethodMember ||
             definition instanceof AInternMethodMember)
         {
-            nameToken = ((AMethodMember) definition).getId();
+            if (definition instanceof AMethodMember)
+            {
+                nameToken = ((AMethodMember) definition).getId();
+            }
+            else
+            {
+                nameToken = ((AInternMethodMember) definition).getId();
+            }
             kind = "Méthode";
         }
 

@@ -7,6 +7,8 @@ end
 
 class Integer
   intern fun toString(): String
+  intern fun <(i: Integer): Integer
+  intern fun +(i: Integer): Integer
 end
 
 class String
@@ -26,4 +28,12 @@ print("Hello world!")
 
 # ecrire: 1
 var i = 1
+while i < 5 do
+    var a = i
+    i = i + 1
+end
+
+
 print(i)
+
+print(a)

@@ -1,13 +1,14 @@
 /**
  * Created by Antoine-Ali on 18/02/2015.
  */
-package Interpreter;
+package min15.Interpreter;
 
 import java.math.BigInteger;
 import java.util.*;
 
 import min15.exceptions.InterpreterException;
 import min15.exceptions.ReturnException;
+import min15.exceptions.SemanticException;
 import node.*;
 import min15.structure.*;
 import analysis.DepthFirstAdapter;
@@ -31,7 +32,15 @@ public class InterpreterEngine extends DepthFirstAdapter
 
     private Frame _currentFrame; //proposition de traduction => Contexte (d'exécution)
 
-    private final Map<Class, ClassInfo> _primitiveClassInfo = new LinkedHashMap<>();
+    private ClassInfo _objectClassInfo;
+
+    private BooleanClassInfo _booleanClassInfo;
+
+    private IntegerClassInfo _integerClassInfo;
+
+    private StringClassInfo _stringClassInfo;
+
+    private Scope _currentScope;
     //endregion
 
     //region Main Methods
@@ -66,11 +75,6 @@ public class InterpreterEngine extends DepthFirstAdapter
     //endregion
 
     //region "Utility" Methods
-    private <T extends ClassInfo> T GetPrimitiveTypeClassInfo(Class klass)
-    {
-        return (T)this._primitiveClassInfo.get(klass);
-    }
-
 
     private List<TId> GetParams(PParams node)
     {
@@ -112,6 +116,7 @@ public class InterpreterEngine extends DepthFirstAdapter
     {
         this._currentFrame.SetCurrentLocation(location);
         this._currentFrame = frame;
+        this._currentScope = frame.GetScope();
         try
         {
             invokedMethod.Execute(this);
@@ -120,6 +125,7 @@ public class InterpreterEngine extends DepthFirstAdapter
 
         this._currentFrame = frame.GetPreviousFrame();
         this._currentFrame.SetCurrentLocation(null);
+        this._currentScope = frame.GetScope();
         return frame.GetReturnValue();
     }
 
@@ -131,7 +137,7 @@ public class InterpreterEngine extends DepthFirstAdapter
         {
             throw new InterpreterException("L'argument de abort est null", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
-        if (!arg.is_a(this._primitiveClassInfo.get(String.class)))
+        if (!arg.is_a(_stringClassInfo))
         {
             throw new InterpreterException("L'argument de abort n'est pas une string", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
@@ -142,7 +148,7 @@ public class InterpreterEngine extends DepthFirstAdapter
     public void IntegerToS(PrimitiveNormalMethodInfo primitiveNormalMethodInfo)
     {
         IntegerInstance self = (IntegerInstance)this._currentFrame.GetReceiver();
-        this._currentFrame.SetReturnValue((this.<StringClassInfo>GetPrimitiveTypeClassInfo(String.class)).NewString(self.GetValue().toString()));
+        this._currentFrame.SetReturnValue((_stringClassInfo).NewString(self.GetValue().toString()));
     }
 
     public void StringToSystemOut(PrimitiveNormalMethodInfo primitiveNormalMethodInfo)
@@ -156,15 +162,207 @@ public class InterpreterEngine extends DepthFirstAdapter
         IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
         String argName = methodInfo.GetParamName(0);
         Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
-        if(!arg.is_a(this._primitiveClassInfo.get(Integer.class)))
+        if(!arg.is_a(_integerClassInfo))
         {
             throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
 
         BigInteger left = self.GetValue();
         BigInteger right = ((IntegerInstance) arg).GetValue();
-        this._currentFrame.SetReturnValue((this.<IntegerClassInfo>GetPrimitiveTypeClassInfo(Integer.class)).NewInteger(left.add(right)));
+        this._currentFrame.SetReturnValue((_integerClassInfo).NewInteger(left.add(right)));
     }
+
+    public void IntegerMinus(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
+    {
+        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
+        String argName = primitiveOperatorMethodInfo.GetParamName(0);
+        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        if(!arg.is_a(_integerClassInfo))
+        {
+            throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
+        }
+
+        BigInteger left = self.GetValue();
+        BigInteger right = ((IntegerInstance) arg).GetValue();
+        this._currentFrame.SetReturnValue((_integerClassInfo).NewInteger(left.subtract(right)));
+    }
+    public void IntegerMult(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
+    {
+        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
+        String argName = primitiveOperatorMethodInfo.GetParamName(0);
+        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        if(!arg.is_a(_integerClassInfo))
+        {
+            throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
+        }
+
+        BigInteger left = self.GetValue();
+        BigInteger right = ((IntegerInstance) arg).GetValue();
+        this._currentFrame.SetReturnValue((_integerClassInfo).NewInteger(left.multiply(right)));
+    }
+
+    public void IntegerDiv(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
+    {
+        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
+        String argName = primitiveOperatorMethodInfo.GetParamName(0);
+        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        if(!arg.is_a(_integerClassInfo))
+        {
+            throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
+        }
+
+        BigInteger left = self.GetValue();
+        BigInteger right = ((IntegerInstance) arg).GetValue();
+        this._currentFrame.SetReturnValue((_integerClassInfo).NewInteger(left.divide(right)));
+    }
+
+    public void IntegerMod(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
+    {
+        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
+        String argName = primitiveOperatorMethodInfo.GetParamName(0);
+        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        if(!arg.is_a(_integerClassInfo))
+        {
+            throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
+        }
+
+        BigInteger left = self.GetValue();
+        BigInteger right = ((IntegerInstance) arg).GetValue();
+        this._currentFrame.SetReturnValue((_integerClassInfo).NewInteger(left.mod(right)));
+    }
+
+    public void IntegerLt(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
+    {
+        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
+        String argName = primitiveOperatorMethodInfo.GetParamName(0);
+        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        if(!arg.is_a(_integerClassInfo))
+        {
+            throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
+        }
+
+        BigInteger left = self.GetValue();
+        BigInteger right = ((IntegerInstance) arg).GetValue();
+        if (left.compareTo(right) < 0)
+        {
+            this._currentFrame.SetReturnValue(_booleanClassInfo.GetTrue());
+        }
+        else
+        {
+            this._currentFrame.SetReturnValue(_booleanClassInfo.GetFalse());
+        }
+    }
+
+    public void IntegerLtEq(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
+    {
+        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
+        String argName = primitiveOperatorMethodInfo.GetParamName(0);
+        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        if(!arg.is_a(_integerClassInfo))
+        {
+            throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
+        }
+
+        BigInteger left = self.GetValue();
+        BigInteger right = ((IntegerInstance) arg).GetValue();
+        if (left.compareTo(right) <= 0)
+        {
+            this._currentFrame.SetReturnValue(_booleanClassInfo.GetTrue());
+        }
+        else
+        {
+            this._currentFrame.SetReturnValue(_booleanClassInfo.GetFalse());
+        }
+    }
+
+    public void IntegerGt(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
+    {
+        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
+        String argName = primitiveOperatorMethodInfo.GetParamName(0);
+        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        if(!arg.is_a(_integerClassInfo))
+        {
+            throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
+        }
+
+        BigInteger left = self.GetValue();
+        BigInteger right = ((IntegerInstance) arg).GetValue();
+        if (left.compareTo(right) > 0)
+        {
+            this._currentFrame.SetReturnValue(_booleanClassInfo.GetTrue());
+        }
+        else
+        {
+            this._currentFrame.SetReturnValue(_booleanClassInfo.GetFalse());
+        }
+    }
+
+    public void IntegerGtEq(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
+    {
+        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
+        String argName = primitiveOperatorMethodInfo.GetParamName(0);
+        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        if(!arg.is_a(_integerClassInfo))
+        {
+            throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
+        }
+
+        BigInteger left = self.GetValue();
+        BigInteger right = ((IntegerInstance) arg).GetValue();
+        if (left.compareTo(right) >= 0)
+        {
+            this._currentFrame.SetReturnValue(_booleanClassInfo.GetTrue());
+        }
+        else
+        {
+            this._currentFrame.SetReturnValue(_booleanClassInfo.GetFalse());
+        }
+    }
+
+    public void IntegerEq(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
+    {
+        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
+        String argName = primitiveOperatorMethodInfo.GetParamName(0);
+        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        if(!arg.is_a(_integerClassInfo))
+        {
+            throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
+        }
+
+        BigInteger left = self.GetValue();
+        BigInteger right = ((IntegerInstance) arg).GetValue();
+        if (left.compareTo(right) == 0)
+        {
+            this._currentFrame.SetReturnValue(_booleanClassInfo.GetTrue());
+        }
+        else
+        {
+            this._currentFrame.SetReturnValue(_booleanClassInfo.GetFalse());
+        }
+    }
+
+    public void IntegerNeq(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
+    {
+        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
+        String argName = primitiveOperatorMethodInfo.GetParamName(0);
+        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        if(!arg.is_a(_integerClassInfo))
+        {
+            throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
+        }
+
+        BigInteger left = self.GetValue();
+        BigInteger right = ((IntegerInstance) arg).GetValue();
+        if (left.compareTo(right) != 0)
+        {
+            this._currentFrame.SetReturnValue(_booleanClassInfo.GetTrue());
+        }
+        else
+        {
+            this._currentFrame.SetReturnValue(_booleanClassInfo.GetFalse());
+        }
+    }
+
 
     public void StringPlus(MethodInfo methodInfo)
     {
@@ -174,7 +372,7 @@ public class InterpreterEngine extends DepthFirstAdapter
 
         Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
 
-        if(!arg.is_a(this._primitiveClassInfo.get(String.class)))
+        if(!arg.is_a(_stringClassInfo))
         {
             throw new InterpreterException("L'argument de droite n'est pas une chaine", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
@@ -182,16 +380,40 @@ public class InterpreterEngine extends DepthFirstAdapter
         String left = self.GetValue();
         String right = ((StringInstance) arg).GetValue();
 
-        this._currentFrame.SetReturnValue((this.<StringClassInfo>GetPrimitiveTypeClassInfo(String.class)).NewString(left.concat(right)));
+        this._currentFrame.SetReturnValue((_stringClassInfo).NewString(left.concat(right)));
     }
 
     private void CheckIfTypeExists(Class klass)
     {
-        this._primitiveClassInfo.put(klass, this._classTable.GetClassInfoOrNull(Object.class));
-        if(this._primitiveClassInfo.get(klass) == null)
+        Boolean failed = true;
+        if(klass == Object.class)
         {
-            throw new InterpreterException("La classe " + klass.getName() + " n'est pas définie", null);
+            _objectClassInfo = this._classTable.GetObjectClassInfoOrNull();
+            if (_objectClassInfo != null)
+                failed = false;
         }
+        else if (klass == Integer.class)
+        {
+            _integerClassInfo = this._classTable.GetIntegerClassInfoOrNull();
+            if (_integerClassInfo != null)
+                failed = false;
+        }
+        else if (klass == Boolean.class)
+        {
+            _booleanClassInfo = this._classTable.GetBooleanClassInfoOrNull();
+            if (_booleanClassInfo != null)
+                failed = false;
+        }
+        else if(klass == String.class)
+        {
+            _stringClassInfo = this._classTable.GetStringClassInfoOrNull();
+            if (_stringClassInfo != null)
+                failed = false;
+        }
+
+        if (failed)
+            throw new InterpreterException("La classe " + klass.getName() + " n'est pas définie", null);
+
     }
 
     private void HandleCompilerKnownClasses()
@@ -215,9 +437,10 @@ public class InterpreterEngine extends DepthFirstAdapter
 
         HandleCompilerKnownClasses();
 
-        Instance instance = this._primitiveClassInfo.get(Object.class).NewInstance();
+        Instance instance = _objectClassInfo.NewInstance();
 
         this._currentFrame = new Frame(null, instance, null);
+        this._currentScope = this._currentFrame.GetScope();
 
         Visit(node.getStmts());
     }
@@ -419,14 +642,23 @@ public class InterpreterEngine extends DepthFirstAdapter
         Instance value = GetExpEval(ifStatement ? ((AIfStmt) node).getExp() : ((AWhileStmt) node).getExp());
         if (value == null)
         {
-            throw new InterpreterException("L'expression est nulle", ifStatement ? ((AIfStmt) node).getEol1() : ((AWhileStmt) node).getEol1());
+            throw new InterpreterException("L'expression est nulle", ifStatement ? ((AIfStmt) node).getIf() : ((AWhileStmt) node).getWhile());
         }
 
-        if (!value.is_a(this._primitiveClassInfo.get(Boolean.class)))
+        if (!value.is_a(_booleanClassInfo))
         {
-            throw new InterpreterException("l'expression n'est pas booléenne", ifStatement ? ((AIfStmt) node).getEol1() : ((AWhileStmt) node).getEol1());
+            throw new InterpreterException("l'expression n'est pas booléenne", ifStatement ? ((AIfStmt) node).getIf() : ((AWhileStmt) node).getWhile());
         }
         return value;
+    }
+
+
+    @Override
+    public void inAWhileStmt(AWhileStmt node)
+    {
+        Scope newScope = new Scope(this._currentScope);
+        this._currentScope = newScope;
+        this._currentFrame.SetScope(newScope);
     }
 
 
@@ -437,7 +669,7 @@ public class InterpreterEngine extends DepthFirstAdapter
         {
             Instance value = CheckBooleanExpressionValidity(node);
 
-            if (value == (this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class)).GetFalse())
+            if (value == (_booleanClassInfo).GetFalse())
             {
                 break;
             }
@@ -446,13 +678,27 @@ public class InterpreterEngine extends DepthFirstAdapter
         }
     }
 
+    @Override
+    public void outAWhileStmt(AWhileStmt node)
+    {
+        this._currentScope = this._currentScope.GetPreviousScope();
+        this._currentFrame.SetScope(this._currentScope);
+    }
+
+    @Override
+    public void inAIfStmt(AIfStmt node)
+    {
+        Scope newScope = new Scope(this._currentScope);
+        this._currentScope = newScope;
+        this._currentFrame.SetScope(newScope);
+    }
 
     @Override
     public void caseAIfStmt(AIfStmt node)
     {
-        Instance value =CheckBooleanExpressionValidity(node);
+        Instance value = CheckBooleanExpressionValidity(node);
 
-        if (value == (this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class)).GetTrue())
+        if (value == (_booleanClassInfo).GetTrue())
         {
             Visit(node.getStmts());
         }
@@ -460,6 +706,13 @@ public class InterpreterEngine extends DepthFirstAdapter
         {
             Visit(node.getElsePart());
         }
+    }
+
+    @Override
+    public void outAIfStmt(AIfStmt node)
+    {
+        this._currentScope = this._currentScope.GetPreviousScope();
+        this._currentFrame.SetScope(this._currentScope);
     }
 
     @Override
@@ -491,6 +744,8 @@ public class InterpreterEngine extends DepthFirstAdapter
         GetExpEval(node.getSelfCall());
     }
 
+
+
     @Override
     public void caseAVarAssignStmt(AVarAssignStmt node)
     {
@@ -510,13 +765,25 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseAVarDefStmt(AVarDefStmt node)
     {
-        super.caseAVarDefStmt(node);
+        if(this._currentScope.HasVar(node.getId()))
+        {
+            throw new SemanticException(node.getId().getText() + " existe déjà dans le scope courant");
+        }
+        Instance newInstance = _classTable.Get(node.getClassName()).NewInstance();
+        this._currentScope.DeclareVar(node.getId(), newInstance);
     }
 
     @Override
     public void caseAVarInitStmt(AVarInitStmt node)
     {
-        super.caseAVarInitStmt(node);
+        if(this._currentScope.HasVar(node.getId()))
+        {
+            throw new SemanticException(node.getId().getText() + " existe déjà dans le scope courant");
+        }
+
+        Instance value = GetExpEval(node.getExp());
+
+        this._currentScope.DeclareVar(node.getId(), value);
     }
 
 
@@ -537,7 +804,7 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseAOrExp(AOrExp node)
     {
-        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        BooleanClassInfo info = _booleanClassInfo;
         Instance left = GetExpEval(node.getExp());
         Instance right = GetExpEval(node.getConjunction());
 
@@ -574,7 +841,7 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseAAndConjunction(AAndConjunction node)
     {
-        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        BooleanClassInfo info = _booleanClassInfo;
         Instance left = GetExpEval(node.getConjunction());
         Instance right = GetExpEval(node.getComparison());
 
@@ -611,7 +878,7 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseAIsComparison(AIsComparison node)
     {
-        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        BooleanClassInfo info = _booleanClassInfo;
         Instance left = GetExpEval(node.getComparison());
         Instance right = GetExpEval(node.getArithExp());
         if (left == right)
@@ -627,7 +894,7 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseAEqComparison(AEqComparison node)
     {
-        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        BooleanClassInfo info = _booleanClassInfo;
         Instance left = GetExpEval(node.getComparison());
         Instance right = GetExpEval(node.getArithExp());
         if (left == null || right == null)
@@ -653,7 +920,7 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseANeqComparison(ANeqComparison node)
     {
-        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        BooleanClassInfo info = _booleanClassInfo;
         Instance left = GetExpEval(node.getComparison());
         Instance right = GetExpEval(node.getArithExp());
         if (left == null || right == null)
@@ -679,7 +946,7 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseALtComparison(ALtComparison node)
     {
-        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        BooleanClassInfo info = _booleanClassInfo;
         Instance left = GetExpEval(node.getComparison());
         Instance right = GetExpEval(node.getArithExp());
         if (left == null || right == null)
@@ -698,7 +965,7 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseAGtComparison(AGtComparison node)
     {
-        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        BooleanClassInfo info = _booleanClassInfo;
         Instance left = GetExpEval(node.getComparison());
         Instance right = GetExpEval(node.getArithExp());
         if (left == null || right == null)
@@ -717,7 +984,7 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseALteqComparison(ALteqComparison node)
     {
-        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        BooleanClassInfo info = _booleanClassInfo;
         Instance left = GetExpEval(node.getComparison());
         Instance right = GetExpEval(node.getArithExp());
         if (left == null || right == null)
@@ -743,7 +1010,7 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseAGteqComparison(AGteqComparison node)
     {
-        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        BooleanClassInfo info = _booleanClassInfo;
         Instance left = GetExpEval(node.getComparison());
         Instance right = GetExpEval(node.getArithExp());
         if (left == null || right == null)
@@ -932,7 +1199,7 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseAIsaRightUnaryExp(AIsaRightUnaryExp node)
     {
-        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        BooleanClassInfo info = _booleanClassInfo;
         Instance left = GetExpEval(node.getRightUnaryExp());
         ClassInfo right = this._classTable.Get(node.getClassName());
 
@@ -972,13 +1239,13 @@ public class InterpreterEngine extends DepthFirstAdapter
     public void caseANotLeftUnaryExp(ANotLeftUnaryExp node)
     {
         Instance value = GetExpEval(node.getLeftUnaryExp());
-        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
+        BooleanClassInfo info = _booleanClassInfo;
         if(value == null)
         {
             throw new InterpreterException("expression is null", node.getNot());
         }
 
-        if (value == this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class).GetTrue())
+        if (value == _booleanClassInfo.GetTrue())
         {
             this._expEval = info.GetFalse();
         }
@@ -992,13 +1259,13 @@ public class InterpreterEngine extends DepthFirstAdapter
     public void caseANegLeftUnaryExp(ANegLeftUnaryExp node)
     {
         Instance value = GetExpEval(node.getLeftUnaryExp());
-        if(!(value.is_a(this._primitiveClassInfo.get(Integer.class))))
+        if(!(value.is_a(_integerClassInfo)))
         {
             throw new InterpreterException("IL est seulement possible d'avoir un entier négatif", node.getMinus());
         }
 
-        (this.<IntegerClassInfo>GetPrimitiveTypeClassInfo(Integer.class))
-                .NewInteger(((IntegerInstance) value).GetValue().multiply(new BigInteger("-1")));
+        (_integerClassInfo)
+                .NewInteger(((IntegerInstance) value).GetValue().negate());
     }
 
     @Override
@@ -1056,7 +1323,7 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseANumTerm(ANumTerm node)
     {
-        this._expEval = (this.<IntegerClassInfo>GetPrimitiveTypeClassInfo(Integer.class))
+        this._expEval = (_integerClassInfo)
                 .NewInteger(new BigInteger(node.getNumber().getText()));
     }
 
@@ -1075,13 +1342,13 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseATrueTerm(ATrueTerm node)
     {
-        this._expEval = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class).GetTrue();
+        this._expEval = _booleanClassInfo.GetTrue();
     }
 
     @Override
     public void caseAFalseTerm(AFalseTerm node)
     {
-        this._expEval = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class).GetFalse();
+        this._expEval = _booleanClassInfo.GetFalse();
     }
 
     @Override
@@ -1092,7 +1359,7 @@ public class InterpreterEngine extends DepthFirstAdapter
         string = string.substring(1, string.length() - 1);
         //Handling escaped characters, we don't want to negate the effect of the control chars (\t \b \n \r \f)
         string = string.replaceAll("\\\\([^tbnrtf])","$1");
-        this._expEval = this.<StringClassInfo>GetPrimitiveTypeClassInfo(String.class)
+        this._expEval = _stringClassInfo
                 .NewString(string);
     }
 
@@ -1155,7 +1422,7 @@ public class InterpreterEngine extends DepthFirstAdapter
                     " arguments", node.getId());
         }
 
-        Frame frame = new Frame(this._currentFrame, receiver, invokedMethod);
+        Frame frame = new Frame(this._currentFrame, receiver, invokedMethod, this._currentScope);
 
         for(PExp exp : expList)
         {

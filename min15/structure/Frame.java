@@ -17,23 +17,41 @@ public class Frame
     private final MethodInfo _invokedMethod;
     private final Map<String, Instance> _varNameToValueMap = new LinkedHashMap<>();
 
+    private Scope _scope;
+
     private Instance _returnValue;
 
     private int _nextParamIndex;
 
     private Token _currentLocation;
 
-    public Frame(Frame previousFrame, Instance receiver, MethodInfo invokedMethod)
+    public Frame(Frame previousFrame, Instance receiver, MethodInfo invokedMethod, Scope scope)
     {
         this._previousFrame = previousFrame;
         this._receiver = receiver;
         this._invokedMethod = invokedMethod;
+        this._scope = scope;
+    }
+
+    public Frame(Frame previousFrame, Instance receiver, MethodInfo invokedMethod)
+    {
+        this(previousFrame, receiver, invokedMethod, new Scope(null));
     }
 
     public void SetVar(TId id, Instance value)
     {
         String name = id.getText();
         this._varNameToValueMap.put(name, value);
+    }
+
+    public Scope GetScope()
+    {
+        return this._scope;
+    }
+
+    public void SetScope(Scope scope)
+    {
+        this._scope = scope;
     }
 
     public Instance GetReceiver()
@@ -69,7 +87,14 @@ public class Frame
         String name = id.getText();
         if(!this._varNameToValueMap.containsKey(name))
         {
-            throw new InterpreterException("Variavle " + name + " inconnue", id);
+            if(!_scope.HasVar(id))
+            {
+                throw new InterpreterException("Paramètre " + name + " inconnu", id);
+            }
+            else
+            {
+                return this._scope.GetVar(id);
+            }
         }
 
         return this._varNameToValueMap.get(name);
