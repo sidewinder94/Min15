@@ -1,6 +1,6 @@
 package min15.structure;
 
-import Interpreter.Min15Interpreter;
+import Interpreter.InterpreterEngine;
 import min15.exceptions.InterpreterException;
 import node.AInternMethodMember;
 import node.TId;
@@ -66,7 +66,7 @@ public class PrimitiveNormalMethodInfo extends MethodInfo
     }
 
     @Override
-    public void Execute(Min15Interpreter interpreter)
+    public void Execute(InterpreterEngine interpreter)
     {
         switch(this._operation)
         {

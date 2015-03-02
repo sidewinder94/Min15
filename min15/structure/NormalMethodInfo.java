@@ -1,8 +1,7 @@
 package min15.structure;
 
-import Interpreter.Min15Interpreter;
+import Interpreter.InterpreterEngine;
 import node.AMethodMember;
-import node.PParam;
 import node.TId;
 
 import java.util.List;
@@ -27,7 +26,7 @@ public class NormalMethodInfo extends MethodInfo
     }
 
     @Override
-    public void Execute(Min15Interpreter interpreter)
+    public void Execute(InterpreterEngine interpreter)
     {
         interpreter.Visit(this._definition.getStmts());
     }

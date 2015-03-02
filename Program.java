@@ -2,7 +2,7 @@
  * Created by Antoine-Ali on 18/02/2015.
  */
 
-import Interpreter.Min15Interpreter;
+import Interpreter.InterpreterEngine;
 import min15.exceptions.InterpreterException;
 import lexer.Lexer;
 import lexer.LexerException;
@@ -72,7 +72,7 @@ public class Program {
             System.exit(1);
         }
 
-        Min15Interpreter interpreter = new Min15Interpreter();
+        InterpreterEngine interpreter = new InterpreterEngine();
 
         try
         {

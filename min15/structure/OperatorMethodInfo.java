@@ -1,6 +1,6 @@
 package min15.structure;
 
-import Interpreter.Min15Interpreter;
+import Interpreter.InterpreterEngine;
 import min15.exceptions.InterpreterException;
 import node.*;
 
@@ -48,7 +48,7 @@ public class OperatorMethodInfo extends MethodInfo
     }
 
     @Override
-    public void Execute(Min15Interpreter interpreter)
+    public void Execute(InterpreterEngine interpreter)
     {
         interpreter.Visit(this._definition.getStmts());
     }

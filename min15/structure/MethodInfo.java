@@ -1,6 +1,6 @@
 package min15.structure;
 
-import Interpreter.Min15Interpreter;
+import Interpreter.InterpreterEngine;
 import min15.exceptions.InterpreterException;
 import node.TId;
 
@@ -45,7 +45,7 @@ public abstract class MethodInfo
         return this._paramNames.size();
     }
 
-    public abstract void Execute(Min15Interpreter interpreter);
+    public abstract void Execute(InterpreterEngine interpreter);
 
     public ClassInfo GetClassInfo()
     {
