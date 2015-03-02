@@ -8,9 +8,9 @@ import java.util.*;
 
 import min15.exceptions.InterpreterException;
 import min15.exceptions.ReturnException;
-import min15.node.*;
+import node.*;
 import min15.structure.*;
-import min15.analysis.DepthFirstAdapter;
+import analysis.DepthFirstAdapter;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 
@@ -211,7 +211,7 @@ public class Min15Interpreter extends DepthFirstAdapter
     @Override
     public void caseAFile(AFile node)
     {
-        node.getClassDef().forEach(this::Visit);
+        node.getClassDefs().forEach(this::Visit);
 
         HandleCompilerKnownClasses();
 
@@ -407,7 +407,7 @@ public class Min15Interpreter extends DepthFirstAdapter
     @Override
     public void caseAStmts(AStmts node)
     {
-        node.getStmt().forEach(this::Visit);
+        node.getStmts().forEach(this::Visit);
     }
     //endregion
 
@@ -506,11 +506,6 @@ public class Min15Interpreter extends DepthFirstAdapter
         self.SetField(node.getFieldName(), value);
     }
 
-
-
-    @Override
-    public void caseAEmptyStmt(AEmptyStmt node)
-    {}
 
     @Override
     public void caseAVarDefStmt(AVarDefStmt node)
@@ -845,7 +840,7 @@ public class Min15Interpreter extends DepthFirstAdapter
     @Override
     public void caseAMulFactor(AMulFactor node)
     {
-        Instance left = GetExpEval(node.getRightUnaryExp());
+        Instance left = GetExpEval(node.getLeftUnaryExp());
         Instance right = GetExpEval(node.getFactor());
 
         if (left == null || right == null)
@@ -870,7 +865,7 @@ public class Min15Interpreter extends DepthFirstAdapter
     @Override
     public void caseADivFactor(ADivFactor node)
     {
-        Instance left = GetExpEval(node.getRightUnaryExp());
+        Instance left = GetExpEval(node.getLeftUnaryExp());
         Instance right = GetExpEval(node.getFactor());
 
         if (left == null || right == null)
@@ -895,7 +890,7 @@ public class Min15Interpreter extends DepthFirstAdapter
     @Override
     public void caseAModFactor(AModFactor node)
     {
-        Instance left = GetExpEval(node.getRightUnaryExp());
+        Instance left = GetExpEval(node.getLeftUnaryExp());
         Instance right = GetExpEval(node.getFactor());
 
         if (left == null || right == null)
@@ -920,7 +915,7 @@ public class Min15Interpreter extends DepthFirstAdapter
     @Override
     public void caseASimpleFactor(ASimpleFactor node)
     {
-        Visit(node.getRightUnaryExp());
+        Visit(node.getLeftUnaryExp());
     }
 
 
@@ -977,9 +972,19 @@ public class Min15Interpreter extends DepthFirstAdapter
     public void caseANotLeftUnaryExp(ANotLeftUnaryExp node)
     {
         Instance value = GetExpEval(node.getLeftUnaryExp());
+        BooleanClassInfo info = this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class);
         if(value == null)
         {
             throw new InterpreterException("expression is null", node.getNot());
+        }
+
+        if (value == this.<BooleanClassInfo>GetPrimitiveTypeClassInfo(Boolean.class).GetTrue())
+        {
+            this._expEval = info.GetFalse();
+        }
+        else
+        {
+            this._expEval = info.GetTrue();
         }
     }
 
@@ -1165,7 +1170,7 @@ public class Min15Interpreter extends DepthFirstAdapter
     public void caseAArgs(AArgs node)
     {
         Visit(node.getArg());
-        node.getAdditionalArg().forEach(this::Visit);
+        node.getAdditionalArgs().forEach(this::Visit);
     }
 
     @Override

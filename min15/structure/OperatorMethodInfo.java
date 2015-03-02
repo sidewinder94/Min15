@@ -2,7 +2,7 @@ package min15.structure;
 
 import Interpreter.Min15Interpreter;
 import min15.exceptions.InterpreterException;
-import min15.node.*;
+import node.*;
 
 import java.util.List;
 

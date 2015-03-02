@@ -1,8 +1,8 @@
 package min15.structure;
 
 import min15.exceptions.InterpreterException;
-import min15.node.AClassDef;
-import min15.node.ASuperDecl;
+import node.AClassDef;
+import node.ASuperDecl;
 
 /**
  * Created by Antoine-Ali on 18/02/2015.

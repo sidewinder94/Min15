@@ -4,11 +4,11 @@
 
 import Interpreter.Min15Interpreter;
 import min15.exceptions.InterpreterException;
-import min15.lexer.Lexer;
-import min15.lexer.LexerException;
-import min15.node.Node;
-import min15.parser.Parser;
-import min15.parser.ParserException;
+import lexer.Lexer;
+import lexer.LexerException;
+import node.Node;
+import parser.Parser;
+import parser.ParserException;
 
 import java.io.*;
 

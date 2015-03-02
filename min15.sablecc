@@ -11,7 +11,7 @@ Helpers
   cr = 13;
   lf = 10;
   tab = 9;
-  
+
   not_eol = [[0..0xffff]-[cr+lf]];
 
 Tokens
@@ -39,7 +39,7 @@ Tokens
   and = 'and';
   or = 'or';
   not = 'not';
-  
+
   l_par = '(';
   r_par = ')';
   plus = '+';
@@ -53,7 +53,7 @@ Tokens
   gt = '>';
   lteq = '<=';
   gteq = '>=';
-  
+
   comma = ',';
   colon = ':';
   dot = '.';
@@ -81,30 +81,30 @@ Ignored Tokens
 Productions
 
   file =
-    class_def* stmts;
+    [class_defs]:class_def* stmts [eols]:eol*;
 
   class_def =
-    [class_keyword]:class class_name [eol1]:eol super_decl? member* end [eol2]:eol;
+    [eols1]:eol* [class_keyword]:class class_name super_decl? [eol1]:eol [members]:member* [eols2]:eol* end [eol2]:eol;
 
   super_decl =
-    super class_name eol;
+    eol super class_name;
 
   member =
-    {field} var field_name eol |
-    {method} fun id l_par params? r_par return_decl? [eol1]:eol? do [eol2]:eol stmts end [eol3]:eol |
-    {operator} fun operator l_par params? r_par return_decl? [eol1]:eol? do [eol2]:eol stmts end [eol3]:eol |
-    {intern_method} intern fun id l_par params? r_par return_decl? eol |
-    {intern_operator} intern fun operator l_par params? r_par return_decl? eol;
+    {field} [eols]:eol* var field_name eol |
+    {method} [eols]:eol* fun id l_par params? r_par return_decl? [eol1]:eol? do [eol2]:eol stmts end [eol3]:eol |
+    {operator} [eols]:eol* fun operator l_par params? r_par return_decl? [eol1]:eol? do [eol2]:eol stmts end [eol3]:eol |
+    {intern_method} [eols]:eol* intern fun id l_par params? r_par return_decl? eol |
+    {intern_operator} [eols]:eol* intern fun operator l_par params? r_par return_decl? eol;
 
   params =
-    [eol1]:eol? param additional_param* [eol2]:eol?;
-    
+    [eol1]:eol? param [additional_params]:additional_param* [eol2]:eol?;
+
   additional_param =
     comma eol? param;
-    
+
   param =
     id colon class_name;
-    
+
   return_decl =
     colon class_name;
 
@@ -120,22 +120,21 @@ Productions
     {star} star |
     {slash} slash |
     {percent} percent;
-    
+
   stmts =
-    stmt*;
+    [stmts]:stmt*;
 
   stmt =
-    {empty} eol |
-    {var_def} var id colon class_name eol |
-    {var_init} var id eq [eol1]:eol? exp [eol2]:eol |
-    {var_assign} id eq [eol1]:eol? exp [eol2]:eol |
-    {field_assign} field_name eq [eol1]:eol? exp [eol2]:eol |
-    {call} call eol |
-    {self_call} self_call eol |
-    {while} while [eol1]:eol? exp [eol2]:eol? do [eol3]:eol stmts end [eol4]:eol |
-    {if} if [eol1]:eol? exp [eol2]:eol? then [eol3]:eol stmts else_part? end [eol4]:eol |
-    {return} return exp? eol;
-    
+    {var_def} [eols]:eol* var id colon class_name eol |
+    {var_init} [eols]:eol* var id eq [eol1]:eol? exp [eol2]:eol |
+    {var_assign} [eols]:eol* id eq [eol1]:eol? exp [eol2]:eol |
+    {field_assign} [eols]:eol* field_name eq [eol1]:eol? exp [eol2]:eol |
+    {call} [eols]:eol* call eol |
+    {self_call} [eols]:eol* self_call eol |
+    {while} [eols]:eol* while [eol1]:eol? exp [eol2]:eol? do [eol3]:eol stmts end [eol4]:eol |
+    {if} [eols]:eol* if [eol1]:eol? exp [eol2]:eol? then [eol3]:eol stmts else_part? end [eol4]:eol |
+    {return} [eols]:eol* return exp? eol;
+
   else_part =
     else eol stmts;
 
@@ -163,10 +162,10 @@ Productions
     {simple} factor;
 
   factor =
-    {mul} factor star eol? right_unary_exp |
-    {div} factor slash eol? right_unary_exp |
-    {mod} factor percent eol? right_unary_exp |
-    {simple} right_unary_exp;
+    {mul} factor star eol? left_unary_exp |
+    {div} factor slash eol? left_unary_exp |
+    {mod} factor percent eol? left_unary_exp |
+    {simple} left_unary_exp;
 
   left_unary_exp =
     {not} not left_unary_exp |
@@ -199,10 +198,10 @@ Productions
     id l_par args? r_par;
 
   args =
-    [eol1]:eol? arg additional_arg* [eol2]:eol?;    
-    
+    [eol1]:eol? arg [additional_args]:additional_arg* [eol2]:eol?;
+
   additional_arg =
     comma eol? arg;
-    
+
   arg =
     exp;

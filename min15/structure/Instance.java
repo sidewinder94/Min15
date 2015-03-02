@@ -1,7 +1,7 @@
 package min15.structure;
 
 import min15.exceptions.InterpreterException;
-import min15.node.TFieldName;
+import node.TFieldName;
 
 import java.util.*;
 

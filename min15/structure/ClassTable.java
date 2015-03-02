@@ -1,9 +1,9 @@
 package min15.structure;
 
 import min15.exceptions.InterpreterException;
-import min15.node.AClassDef;
-import min15.node.TClassName;
-import min15.node.Token;
+import node.AClassDef;
+import node.TClassName;
+import node.Token;
 
 import java.util.*;
 

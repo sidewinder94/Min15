@@ -1,6 +1,6 @@
 package min15.structure;
 
-import min15.node.*;
+import node.*;
 
 /**
  * Created by Antoine-Ali on 18/02/2015.

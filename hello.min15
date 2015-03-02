@@ -1,0 +1,29 @@
+class Object
+
+  fun print(o: Object) do
+    o.toString().toSystemOut()  
+  end
+end
+
+class Integer
+  intern fun toString(): String
+end
+
+class String
+
+  fun toString(): String do
+    return self
+  end
+
+  intern fun toSystemOut()
+end
+
+class Boolean
+end
+
+# ecrire: Hello World
+print("Hello world!")
+
+# ecrire: 1
+var i = 1
+print(i)

@@ -1,7 +1,7 @@
 package min15.structure;
 
 import min15.exceptions.InterpreterException;
-import min15.node.*;
+import node.*;
 
 import java.util.LinkedHashMap;
 import java.util.List;

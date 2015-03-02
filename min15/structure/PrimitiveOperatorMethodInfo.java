@@ -2,9 +2,9 @@ package min15.structure;
 
 import Interpreter.Min15Interpreter;
 import min15.exceptions.InterpreterException;
-import min15.node.AInternOperatorMember;
-import min15.node.TId;
-import min15.node.Token;
+import node.AInternOperatorMember;
+import node.TId;
+import node.Token;
 
 import java.util.List;
 

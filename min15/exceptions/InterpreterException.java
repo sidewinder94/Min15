@@ -1,6 +1,6 @@
 package min15.exceptions;
 
-import min15.node.Token;
+import node.Token;
 
 /**
  * Created by Antoine-Ali on 18/02/2015.

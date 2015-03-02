@@ -1,6 +1,6 @@
 package min15.structure;
 
-import min15.node.AClassDef;
+import node.AClassDef;
 
 import java.math.BigInteger;
 import java.util.*;

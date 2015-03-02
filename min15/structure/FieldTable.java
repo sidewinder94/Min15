@@ -1,8 +1,8 @@
 package min15.structure;
 
 import min15.exceptions.InterpreterException;
-import min15.node.AFieldMember;
-import min15.node.Token;
+import node.AFieldMember;
+import node.Token;
 
 import java.util.*;
 
