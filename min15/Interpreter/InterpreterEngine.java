@@ -40,7 +40,6 @@ public class InterpreterEngine extends DepthFirstAdapter
 
     private StringClassInfo _stringClassInfo;
 
-    private Scope _currentScope;
     //endregion
 
     //region Main Methods
@@ -116,7 +115,6 @@ public class InterpreterEngine extends DepthFirstAdapter
     {
         this._currentFrame.SetCurrentLocation(location);
         this._currentFrame = frame;
-        this._currentScope = frame.GetScope();
         try
         {
             invokedMethod.Execute(this);
@@ -125,7 +123,6 @@ public class InterpreterEngine extends DepthFirstAdapter
 
         this._currentFrame = frame.GetPreviousFrame();
         this._currentFrame.SetCurrentLocation(null);
-        this._currentScope = frame.GetScope();
         return frame.GetReturnValue();
     }
 
@@ -440,7 +437,6 @@ public class InterpreterEngine extends DepthFirstAdapter
         Instance instance = _objectClassInfo.NewInstance();
 
         this._currentFrame = new Frame(null, instance, null);
-        this._currentScope = this._currentFrame.GetScope();
 
         Visit(node.getStmts());
     }
@@ -652,21 +648,15 @@ public class InterpreterEngine extends DepthFirstAdapter
         return value;
     }
 
-
-    @Override
-    public void inAWhileStmt(AWhileStmt node)
-    {
-        Scope newScope = new Scope(this._currentScope);
-        this._currentScope = newScope;
-        this._currentFrame.SetScope(newScope);
-    }
-
-
     @Override
     public void caseAWhileStmt(AWhileStmt node)
     {
+
         while(true)
         {
+            Scope newScope = new Scope(this._currentFrame.GetScope());
+            this._currentFrame.SetScope(newScope);
+
             Instance value = CheckBooleanExpressionValidity(node);
 
             if (value == (_booleanClassInfo).GetFalse())
@@ -675,27 +665,17 @@ public class InterpreterEngine extends DepthFirstAdapter
             }
 
             Visit(node.getStmts());
+            this._currentFrame.SetScope(this._currentFrame.GetScope().GetPreviousScope());
         }
+
     }
 
-    @Override
-    public void outAWhileStmt(AWhileStmt node)
-    {
-        this._currentScope = this._currentScope.GetPreviousScope();
-        this._currentFrame.SetScope(this._currentScope);
-    }
-
-    @Override
-    public void inAIfStmt(AIfStmt node)
-    {
-        Scope newScope = new Scope(this._currentScope);
-        this._currentScope = newScope;
-        this._currentFrame.SetScope(newScope);
-    }
 
     @Override
     public void caseAIfStmt(AIfStmt node)
     {
+        Scope newScope = new Scope(this._currentFrame.GetScope());
+        this._currentFrame.SetScope(newScope);
         Instance value = CheckBooleanExpressionValidity(node);
 
         if (value == (_booleanClassInfo).GetTrue())
@@ -706,14 +686,9 @@ public class InterpreterEngine extends DepthFirstAdapter
         {
             Visit(node.getElsePart());
         }
+        this._currentFrame.SetScope(this._currentFrame.GetScope().GetPreviousScope());
     }
 
-    @Override
-    public void outAIfStmt(AIfStmt node)
-    {
-        this._currentScope = this._currentScope.GetPreviousScope();
-        this._currentFrame.SetScope(this._currentScope);
-    }
 
     @Override
     public void caseAReturnStmt(AReturnStmt node)
@@ -765,25 +740,25 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseAVarDefStmt(AVarDefStmt node)
     {
-        if(this._currentScope.HasVar(node.getId()))
+        if(this._currentFrame.GetScope().HasVar(node.getId()))
         {
             throw new SemanticException(node.getId().getText() + " existe déjà dans le scope courant");
         }
         Instance newInstance = _classTable.Get(node.getClassName()).NewInstance();
-        this._currentScope.DeclareVar(node.getId(), newInstance);
+        this._currentFrame.GetScope().DeclareVar(node.getId(), newInstance);
     }
 
     @Override
     public void caseAVarInitStmt(AVarInitStmt node)
     {
-        if(this._currentScope.HasVar(node.getId()))
+        if(this._currentFrame.GetScope().HasVar(node.getId()))
         {
             throw new SemanticException(node.getId().getText() + " existe déjà dans le scope courant");
         }
 
         Instance value = GetExpEval(node.getExp());
 
-        this._currentScope.DeclareVar(node.getId(), value);
+        this._currentFrame.GetScope().DeclareVar(node.getId(), value);
     }
 
 
@@ -1422,7 +1397,7 @@ public class InterpreterEngine extends DepthFirstAdapter
                     " arguments", node.getId());
         }
 
-        Frame frame = new Frame(this._currentFrame, receiver, invokedMethod, this._currentScope);
+        Frame frame = new Frame(this._currentFrame, receiver, invokedMethod);
 
         for(PExp exp : expList)
         {

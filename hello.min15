@@ -1,20 +1,37 @@
 class Object
 
   fun print(o: Object) do
-    o.toString().toSystemOut()  
+    o.toString().toSystemOut()
   end
 end
 
 class Integer
   intern fun toString(): String
   intern fun <(i: Integer): Integer
+  intern fun >(i: Integer): Integer
   intern fun +(i: Integer): Integer
+  intern fun -(i: Integer): Integer
+  intern fun *(i: Integer): Integer
+
+
+  fun factor() do
+    if self > 1 then
+        return self * (self - 1).factor()
+    else
+        return 1
+    end
+  end
 end
 
 class String
+  intern fun +(o: String): String
 
   fun toString(): String do
     return self
+  end
+
+  fun concat(o: String) do
+    return self + o
   end
 
   intern fun toSystemOut()
@@ -24,16 +41,23 @@ class Boolean
 end
 
 # ecrire: Hello World
-print("Hello world!")
+print("Hello ".concat("world!"))
+
 
 # ecrire: 1
 var i = 1
+
+#Test de l'efficacité des scopes. i est le meme à l'intérieur et a l'extérieur du while, a n'est accessible que dans le while
+#De plus, la définition de a dans la boucle ne soulève pas d'erreur !
 while i < 5 do
     var a = i
+    print(a)
     i = i + 1
 end
 
 
 print(i)
 
-print(a)
+print(i.factor())
+
+print(a) #error expected, var not declared in this scope
