@@ -1,6 +1,7 @@
 package min15.structure;
 
 import min15.Interpreter.InterpreterEngine;
+import min15.Interpreter.SyntaxicChecker;
 import min15.exceptions.InterpreterException;
 import node.TId;
 
@@ -14,6 +15,29 @@ public abstract class MethodInfo
     private final MethodTable _methodTable;
 
     private final List<String> _paramNames = new LinkedList<>();
+
+    private final List<ClassInfo> _paramTypes = new LinkedList<>();
+
+    private final ClassInfo _returnType;
+
+    public MethodInfo(MethodTable methodTable, List<TId> params, List<ClassInfo> paramsType, ClassInfo returnType)
+    {
+        this._methodTable = methodTable;
+        Set<String> paramsNameSet = new LinkedHashSet<>();
+        for(int i = 0; i < params.size(); i++)
+        {
+            String name = params.get(i).getText();
+            if (paramsNameSet.contains(name))
+            {
+                throw new InterpreterException("Paramètre " + name + " présent en double", params.get(i));
+            }
+
+            _paramTypes.add(paramsType.get(i));
+            paramsNameSet.add(name);
+        }
+        this._paramNames.addAll(paramsNameSet);
+        this._returnType = returnType;
+    }
 
     public MethodInfo(MethodTable methodTable, List<TId> params)
     {
@@ -31,6 +55,7 @@ public abstract class MethodInfo
         }
 
         this._paramNames.addAll(paramsNameSet);
+        this._returnType = null;
     }
 
     public abstract String GetName();
@@ -40,12 +65,16 @@ public abstract class MethodInfo
         return this._paramNames.get(i);
     }
 
+
+    public ClassInfo GetReturnType(){return this._returnType;}
     public int GetParamCount()
     {
         return this._paramNames.size();
     }
 
     public abstract void Execute(InterpreterEngine interpreter);
+
+    public abstract void Execute(SyntaxicChecker checker);
 
     public ClassInfo GetClassInfo()
     {

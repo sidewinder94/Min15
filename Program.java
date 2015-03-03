@@ -3,6 +3,7 @@
  */
 
 import min15.Interpreter.InterpreterEngine;
+import min15.Interpreter.SyntaxicChecker;
 import min15.exceptions.InterpreterException;
 import lexer.Lexer;
 import lexer.LexerException;
@@ -74,10 +75,11 @@ public class Program {
         }
 
         InterpreterEngine interpreter = new InterpreterEngine();
-
+        SyntaxicChecker checker = new SyntaxicChecker();
         try
         {
-            interpreter.Visit(rootNode);
+            checker.Visit(rootNode);
+            //interpreter.Visit(rootNode);
         }
         catch(InterpreterException e)
         {

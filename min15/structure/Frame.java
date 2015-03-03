@@ -17,6 +17,8 @@ public class Frame
     private final MethodInfo _invokedMethod;
     private final Map<String, Instance> _varNameToValueMap = new LinkedHashMap<>();
 
+    private final Map<String, ClassInfo> _varNameToClassInfoMap = new LinkedHashMap<>();
+
     private Scope _scope;
 
     private Instance _returnValue;
@@ -42,6 +44,12 @@ public class Frame
     {
         String name = id.getText();
         this._varNameToValueMap.put(name, value);
+    }
+
+    public void SetVar(TId id, ClassInfo value)
+    {
+        String name = id.getText();
+        this._varNameToClassInfoMap.put(name, value);
     }
 
     public Scope GetScope()
@@ -72,6 +80,12 @@ public class Frame
         this._returnValue = value;
     }
 
+    public void SetParam(ClassInfo value)
+    {
+        String paramName = this._invokedMethod.GetParamName(this._nextParamIndex++);
+        this._varNameToClassInfoMap.put(paramName,value);
+    }
+
     public void SetParam(Instance value)
     {
         String paramName = this._invokedMethod.GetParamName(this._nextParamIndex++);
@@ -81,7 +95,7 @@ public class Frame
     public Instance GetReturnValue() {
         return _returnValue;
     }
-
+    public ClassInfo GetReturnType() {return this._invokedMethod.GetReturnType();}
     public Instance GetVar(TId id)
     {
         String name = id.getText();
