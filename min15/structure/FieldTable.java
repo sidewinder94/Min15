@@ -39,6 +39,8 @@ public class FieldTable
         {
             throw new InterpreterException("Définition double du champ " + name, nameToken);
         }
+        
+        _nameToFieldInfoMap.put(name, new FieldInfo(this, definition));
     }
 
     public boolean Contains(String name)
