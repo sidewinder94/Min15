@@ -16,11 +16,6 @@ public class IntegerClassInfo extends ClassInfo
         super(classTable, definition);
     }
 
-    @Override
-    public Instance NewInstance() {
-        throw new RuntimeException("Invalid Integer Instance Creation");
-    }
-
     public Instance NewInteger(BigInteger value)
     {
         Instance instance = this._valueMap.get(value);

@@ -27,12 +27,25 @@ public class Frame
 
     private Token _currentLocation;
 
+    public Frame(Frame previousFrame, ClassInfo receiver, MethodInfo invokedMethod, Scope scope)
+    {
+        this._previousFrame = previousFrame;
+        this._receiver = receiver.NewInstance();
+        this._invokedMethod = invokedMethod;
+        this._scope = scope;
+    }
+
     public Frame(Frame previousFrame, Instance receiver, MethodInfo invokedMethod, Scope scope)
     {
         this._previousFrame = previousFrame;
         this._receiver = receiver;
         this._invokedMethod = invokedMethod;
         this._scope = scope;
+    }
+
+    public Frame(Frame previousFrame, ClassInfo receiver, MethodInfo invokedMethod)
+    {
+        this(previousFrame, receiver, invokedMethod, new Scope(null));
     }
 
     public Frame(Frame previousFrame, Instance receiver, MethodInfo invokedMethod)
@@ -62,9 +75,9 @@ public class Frame
         this._scope = scope;
     }
 
-    public Instance GetReceiver()
+    public ClassInfo GetReceiver()
     {
-        return this._receiver;
+        return this._receiver.GetClassInfo();
     }
 
     public MethodInfo GetInvokedMethod() {
@@ -96,10 +109,10 @@ public class Frame
         return _returnValue;
     }
     public ClassInfo GetReturnType() {return this._invokedMethod.GetReturnType();}
-    public Instance GetVar(TId id)
+    public ClassInfo GetVar(TId id)
     {
         String name = id.getText();
-        if(!this._varNameToValueMap.containsKey(name))
+        if(!this._varNameToClassInfoMap.containsKey(name))
         {
             if(!_scope.HasVar(id))
             {
@@ -107,21 +120,21 @@ public class Frame
             }
             else
             {
-                return this._scope.GetVar(id);
+                return this._scope.GetVar(id).GetClassInfo();
             }
         }
 
-        return this._varNameToValueMap.get(name);
+        return this._varNameToClassInfoMap.get(name);
     }
 
-    public Instance GetParameterValueWithoutId(String name)
+    public ClassInfo GetParameterValueWithoutId(String name)
     {
-        if(!this._varNameToValueMap.containsKey(name))
+        if(!this._varNameToClassInfoMap.containsKey(name))
         {
             throw new RuntimeException("Paramètre non défini");
         }
 
-        return this._varNameToValueMap.get(name);
+        return this._varNameToClassInfoMap.get(name);
     }
     public Token GetCurrentLocation()
     {

@@ -5,10 +5,28 @@ class Object
   end
 end
 
+class Boolean
+end
+
+class String
+  intern fun +(o: String): String
+
+  fun toString(): String do
+    return self
+  end
+
+  fun concat(o: String) : String do
+    return self + o
+  end
+
+  intern fun toSystemOut()
+end
+
+
 class Integer
   intern fun toString(): String
-  intern fun <(i: Integer): Integer
-  intern fun >(i: Integer): Integer
+  intern fun <(i: Integer): Boolean
+  intern fun >(i: Integer): Boolean
   intern fun +(i: Integer): Integer
   intern fun -(i: Integer): Integer
   intern fun *(i: Integer): Integer
@@ -23,22 +41,7 @@ class Integer
   end
 end
 
-class String
-  intern fun +(o: String): String
 
-  fun toString(): String do
-    return self
-  end
-
-  fun concat(o: String) do
-    return self + o
-  end
-
-  intern fun toSystemOut()
-end
-
-class Boolean
-end
 
 # ecrire: Hello World
 print("Hello ".concat("world!"))

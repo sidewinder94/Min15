@@ -21,6 +21,34 @@ public class FieldTable
         this._classInfo = classInfo;
     }
 
+    public FieldInfo GetField(String name)
+    {
+        return _nameToFieldInfoMap.get(name);
+    }
+
+    public void Add(AFieldMember definition, ClassInfo type)
+    {
+        Token nameToken = definition.getFieldName();
+        String name = nameToken.getText();
+
+        ClassInfo superClassInfo = this._classInfo.GetSuperClassInfoOrNull();
+        if(superClassInfo != null)
+        {
+            if(superClassInfo.GetFieldTable().Contains(name))
+            {
+                throw new InterpreterException("Le champ " + name + " existe dans la super classe", nameToken);
+            }
+        }
+
+        if(this._nameToFieldInfoMap.containsKey(name))
+        {
+            throw new InterpreterException("Définition double du champ " + name, nameToken);
+        }
+
+        _nameToFieldInfoMap.put(name, new FieldInfo(this, definition, type));
+
+    }
+
     public void Add(AFieldMember definition)
     {
         Token nameToken = definition.getFieldName();
@@ -39,6 +67,8 @@ public class FieldTable
         {
             throw new InterpreterException("Définition double du champ " + name, nameToken);
         }
+
+        _nameToFieldInfoMap.put(name, new FieldInfo(this, definition));
     }
 
     public boolean Contains(String name)

@@ -1,6 +1,6 @@
 package min15.structure;
 
-import min15.Interpreter.InterpreterEngine;
+
 import min15.Interpreter.SyntaxicChecker;
 import min15.exceptions.InterpreterException;
 import node.*;
@@ -84,11 +84,6 @@ public class OperatorMethodInfo extends MethodInfo
         return this._operatorToken.getText();
     }
 
-    @Override
-    public void Execute(InterpreterEngine interpreter)
-    {
-        interpreter.Visit(this._definition.getStmts());
-    }
 
     @Override
     public void Execute(SyntaxicChecker checker)

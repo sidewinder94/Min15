@@ -15,10 +15,6 @@ public class StringClassInfo extends ClassInfo
         super(classTable, definition);
     }
 
-    @Override
-    public Instance NewInstance() {
-        throw new RuntimeException("Invalid String Instance Creation");
-    }
 
     public Instance NewString(String value)
     {

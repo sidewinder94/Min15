@@ -75,9 +75,9 @@ public class SyntaxicChecker extends DepthFirstAdapter
     //endregion
 
     //region "Utility" Methods
-    private void ThrowSemantic(int line, int pos)
+    private void ThrowSemantic(int line, int pos, String message)
     {
-        throw new SemanticException("Expression in while is not of boolean type" + "[" + line + "," + pos +"]");
+        throw new SemanticException(message + " " + "[" + line + "," + pos +"]");
     }
 
     private List<TId> GetParams(PParams node)
@@ -89,13 +89,20 @@ public class SyntaxicChecker extends DepthFirstAdapter
         return idList;
     }
 
-    private List<TClassName> GetTypes(PParams node)
+    private List<ClassInfo> GetTypes(PParams node)
     {
         this._typeList = new LinkedList<>();
         Visit(node);
         List<TClassName> typeList = this._typeList;
         this._typeList = null;
-        return typeList;
+        List<ClassInfo> classInfoList = new LinkedList<>();
+        for (TClassName className : typeList)
+        {
+            classInfoList.add(_classTable.Get(className));
+        }
+
+
+        return classInfoList;
     }
 
     private Token GetOperatorToken(POperator node)
@@ -143,7 +150,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
     public void ObjectAbort(MethodInfo methodInfo)
     {
         String argName = methodInfo.GetParamName(0);
-        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        ClassInfo arg = this._currentFrame.GetParameterValueWithoutId(argName);
         if (arg == null)
         {
             throw new InterpreterException("L'argument de abort est null", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
@@ -152,246 +159,179 @@ public class SyntaxicChecker extends DepthFirstAdapter
         {
             throw new InterpreterException("L'argument de abort n'est pas une string", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
-        String message = "[ABORT] : " + ((StringInstance) arg).GetValue();
-        throw  new InterpreterException(message, this._currentFrame.GetPreviousFrame().GetCurrentLocation());
     }
 
     public void IntegerToS(PrimitiveNormalMethodInfo primitiveNormalMethodInfo)
     {
-        IntegerInstance self = (IntegerInstance)this._currentFrame.GetReceiver();
-        this._currentFrame.SetReturnValue((_stringClassInfo).NewString(self.GetValue().toString()));
+        if (!this._currentFrame.GetReceiver().is_a(_integerClassInfo)){
+        ThrowSemantic(this._currentFrame.GetCurrentLocation().getPos(), this._currentFrame.GetCurrentLocation().getLine(), "L'argument n'est pas un entier");
+        }
+
     }
 
     public void StringToSystemOut(PrimitiveNormalMethodInfo primitiveNormalMethodInfo)
     {
-        StringInstance self = (StringInstance) this._currentFrame.GetReceiver();
-        System.out.println(self.GetValue());
+        if (!this._currentFrame.GetReceiver().is_a(_stringClassInfo)){
+            ThrowSemantic(this._currentFrame.GetCurrentLocation().getPos(), this._currentFrame.GetCurrentLocation().getLine(), "L'argument n'est pas un entier");
+        }
     }
 
     public void IntegerPlus(MethodInfo methodInfo)
     {
-        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
         String argName = methodInfo.GetParamName(0);
-        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        ClassInfo arg = this._currentFrame.GetParameterValueWithoutId(argName);
         if(!arg.is_a(_integerClassInfo))
         {
             throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
+        if (!this._currentFrame.GetReceiver().is_a(_integerClassInfo)){
+            ThrowSemantic(this._currentFrame.GetCurrentLocation().getPos(), this._currentFrame.GetCurrentLocation().getLine(), "L'argument de gauche n'estp as un entier");
+        }
 
-        BigInteger left = self.GetValue();
-        BigInteger right = ((IntegerInstance) arg).GetValue();
-        this._currentFrame.SetReturnValue((_integerClassInfo).NewInteger(left.add(right)));
     }
 
     public void IntegerMinus(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
     {
-        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
         String argName = primitiveOperatorMethodInfo.GetParamName(0);
-        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        ClassInfo arg = this._currentFrame.GetParameterValueWithoutId(argName);
         if(!arg.is_a(_integerClassInfo))
         {
             throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
-
-        BigInteger left = self.GetValue();
-        BigInteger right = ((IntegerInstance) arg).GetValue();
-        this._currentFrame.SetReturnValue((_integerClassInfo).NewInteger(left.subtract(right)));
+        if (!this._currentFrame.GetReceiver().is_a(_integerClassInfo)){
+            ThrowSemantic(this._currentFrame.GetCurrentLocation().getPos(), this._currentFrame.GetCurrentLocation().getLine(), "L'argument de gauche n'estp as un entier");
+        }
     }
     public void IntegerMult(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
     {
-        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
         String argName = primitiveOperatorMethodInfo.GetParamName(0);
-        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        ClassInfo arg = this._currentFrame.GetParameterValueWithoutId(argName);
         if(!arg.is_a(_integerClassInfo))
         {
             throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
-
-        BigInteger left = self.GetValue();
-        BigInteger right = ((IntegerInstance) arg).GetValue();
-        this._currentFrame.SetReturnValue((_integerClassInfo).NewInteger(left.multiply(right)));
+        if (!this._currentFrame.GetReceiver().is_a(_integerClassInfo)){
+            ThrowSemantic(this._currentFrame.GetCurrentLocation().getPos(), this._currentFrame.GetCurrentLocation().getLine(), "L'argument de gauche n'estp as un entier");
+        }
     }
 
     public void IntegerDiv(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
     {
-        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
         String argName = primitiveOperatorMethodInfo.GetParamName(0);
-        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        ClassInfo arg = this._currentFrame.GetParameterValueWithoutId(argName);
         if(!arg.is_a(_integerClassInfo))
         {
             throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
-
-        BigInteger left = self.GetValue();
-        BigInteger right = ((IntegerInstance) arg).GetValue();
-        this._currentFrame.SetReturnValue((_integerClassInfo).NewInteger(left.divide(right)));
+        if (!this._currentFrame.GetReceiver().is_a(_integerClassInfo)){
+            ThrowSemantic(this._currentFrame.GetCurrentLocation().getPos(), this._currentFrame.GetCurrentLocation().getLine(), "L'argument de gauche n'estp as un entier");
+        }
     }
 
     public void IntegerMod(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
     {
-        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
         String argName = primitiveOperatorMethodInfo.GetParamName(0);
-        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        ClassInfo arg = this._currentFrame.GetParameterValueWithoutId(argName);
         if(!arg.is_a(_integerClassInfo))
         {
             throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
-
-        BigInteger left = self.GetValue();
-        BigInteger right = ((IntegerInstance) arg).GetValue();
-        this._currentFrame.SetReturnValue((_integerClassInfo).NewInteger(left.mod(right)));
+        if (!this._currentFrame.GetReceiver().is_a(_integerClassInfo)){
+            ThrowSemantic(this._currentFrame.GetCurrentLocation().getPos(), this._currentFrame.GetCurrentLocation().getLine(), "L'argument de gauche n'estp as un entier");
+        }
     }
 
     public void IntegerLt(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
     {
-        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
         String argName = primitiveOperatorMethodInfo.GetParamName(0);
-        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        ClassInfo arg = this._currentFrame.GetParameterValueWithoutId(argName);
         if(!arg.is_a(_integerClassInfo))
         {
             throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
-
-        BigInteger left = self.GetValue();
-        BigInteger right = ((IntegerInstance) arg).GetValue();
-        if (left.compareTo(right) < 0)
-        {
-            this._currentFrame.SetReturnValue(_booleanClassInfo.GetTrue());
-        }
-        else
-        {
-            this._currentFrame.SetReturnValue(_booleanClassInfo.GetFalse());
+        if (!this._currentFrame.GetReceiver().is_a(_integerClassInfo)){
+            ThrowSemantic(this._currentFrame.GetCurrentLocation().getPos(), this._currentFrame.GetCurrentLocation().getLine(), "L'argument de gauche n'estp as un entier");
         }
     }
 
     public void IntegerLtEq(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
     {
-        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
         String argName = primitiveOperatorMethodInfo.GetParamName(0);
-        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        ClassInfo arg = this._currentFrame.GetParameterValueWithoutId(argName);
         if(!arg.is_a(_integerClassInfo))
         {
             throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
-
-        BigInteger left = self.GetValue();
-        BigInteger right = ((IntegerInstance) arg).GetValue();
-        if (left.compareTo(right) <= 0)
-        {
-            this._currentFrame.SetReturnValue(_booleanClassInfo.GetTrue());
-        }
-        else
-        {
-            this._currentFrame.SetReturnValue(_booleanClassInfo.GetFalse());
+        if (!this._currentFrame.GetReceiver().is_a(_integerClassInfo)){
+            ThrowSemantic(this._currentFrame.GetCurrentLocation().getPos(), this._currentFrame.GetCurrentLocation().getLine(), "L'argument de gauche n'estp as un entier");
         }
     }
 
     public void IntegerGt(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
     {
-        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
         String argName = primitiveOperatorMethodInfo.GetParamName(0);
-        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        ClassInfo arg = this._currentFrame.GetParameterValueWithoutId(argName);
         if(!arg.is_a(_integerClassInfo))
         {
             throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
-
-        BigInteger left = self.GetValue();
-        BigInteger right = ((IntegerInstance) arg).GetValue();
-        if (left.compareTo(right) > 0)
-        {
-            this._currentFrame.SetReturnValue(_booleanClassInfo.GetTrue());
-        }
-        else
-        {
-            this._currentFrame.SetReturnValue(_booleanClassInfo.GetFalse());
+        if (!this._currentFrame.GetReceiver().is_a(_integerClassInfo)){
+            ThrowSemantic(this._currentFrame.GetCurrentLocation().getPos(), this._currentFrame.GetCurrentLocation().getLine(), "L'argument de gauche n'estp as un entier");
         }
     }
 
     public void IntegerGtEq(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
     {
-        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
         String argName = primitiveOperatorMethodInfo.GetParamName(0);
-        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        ClassInfo arg = this._currentFrame.GetParameterValueWithoutId(argName);
         if(!arg.is_a(_integerClassInfo))
         {
             throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
-
-        BigInteger left = self.GetValue();
-        BigInteger right = ((IntegerInstance) arg).GetValue();
-        if (left.compareTo(right) >= 0)
-        {
-            this._currentFrame.SetReturnValue(_booleanClassInfo.GetTrue());
-        }
-        else
-        {
-            this._currentFrame.SetReturnValue(_booleanClassInfo.GetFalse());
+        if (!this._currentFrame.GetReceiver().is_a(_integerClassInfo)){
+            ThrowSemantic(this._currentFrame.GetCurrentLocation().getPos(), this._currentFrame.GetCurrentLocation().getLine(), "L'argument de gauche n'estp as un entier");
         }
     }
 
     public void IntegerEq(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
     {
-        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
         String argName = primitiveOperatorMethodInfo.GetParamName(0);
-        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        ClassInfo arg = this._currentFrame.GetParameterValueWithoutId(argName);
         if(!arg.is_a(_integerClassInfo))
         {
             throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
-
-        BigInteger left = self.GetValue();
-        BigInteger right = ((IntegerInstance) arg).GetValue();
-        if (left.compareTo(right) == 0)
-        {
-            this._currentFrame.SetReturnValue(_booleanClassInfo.GetTrue());
-        }
-        else
-        {
-            this._currentFrame.SetReturnValue(_booleanClassInfo.GetFalse());
+        if (!this._currentFrame.GetReceiver().is_a(_integerClassInfo)){
+            ThrowSemantic(this._currentFrame.GetCurrentLocation().getPos(), this._currentFrame.GetCurrentLocation().getLine(), "L'argument de gauche n'estp as un entier");
         }
     }
 
     public void IntegerNeq(PrimitiveOperatorMethodInfo primitiveOperatorMethodInfo)
     {
-        IntegerInstance self = (IntegerInstance) this._currentFrame.GetReceiver();
         String argName = primitiveOperatorMethodInfo.GetParamName(0);
-        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        ClassInfo arg = this._currentFrame.GetParameterValueWithoutId(argName);
         if(!arg.is_a(_integerClassInfo))
         {
             throw new InterpreterException("Arguement de droite n'est pas un entier", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
-
-        BigInteger left = self.GetValue();
-        BigInteger right = ((IntegerInstance) arg).GetValue();
-        if (left.compareTo(right) != 0)
-        {
-            this._currentFrame.SetReturnValue(_booleanClassInfo.GetTrue());
-        }
-        else
-        {
-            this._currentFrame.SetReturnValue(_booleanClassInfo.GetFalse());
+        if (!this._currentFrame.GetReceiver().is_a(_integerClassInfo)){
+            ThrowSemantic(this._currentFrame.GetCurrentLocation().getPos(), this._currentFrame.GetCurrentLocation().getLine(), "L'argument de gauche n'estp as un entier");
         }
     }
 
 
     public void StringPlus(MethodInfo methodInfo)
     {
-        StringInstance self = (StringInstance) this._currentFrame.GetReceiver();
+        StringClassInfo self = (StringClassInfo) this._currentFrame.GetReceiver();
 
         String argName = methodInfo.GetParamName(0);
 
-        Instance arg = this._currentFrame.GetParameterValueWithoutId(argName);
+        ClassInfo arg = this._currentFrame.GetParameterValueWithoutId(argName);
 
         if(!arg.is_a(_stringClassInfo))
         {
             throw new InterpreterException("L'argument de droite n'est pas une chaine", this._currentFrame.GetPreviousFrame().GetCurrentLocation());
         }
-
-        String left = self.GetValue();
-        String right = ((StringInstance) arg).GetValue();
-
-        this._currentFrame.SetReturnValue((_stringClassInfo).NewString(left.concat(right)));
     }
 
     private void CheckIfTypeExists(Class klass)
@@ -490,30 +430,33 @@ public class SyntaxicChecker extends DepthFirstAdapter
     @Override
     public void caseAFieldMember(AFieldMember node)
     {
-        this._currentClassInfo.GetFieldTable().Add(node);
+        this._currentClassInfo.GetFieldTable().Add(node, this._classTable.Get(node.getClassName()));
     }
 
     @Override
     public void caseAMethodMember(AMethodMember node)
     {
         List<TId> params = GetParams(node.getParams());
-        this._currentClassInfo.GetMethodTable().Add(node, params);
+        ClassInfo returnType = GetExpEval(node.getReturnDecl());
+        this._currentClassInfo.GetMethodTable().Add(node, params, GetTypes(node.getParams()), returnType);
     }
 
     @Override
     public void caseAOperatorMember(AOperatorMember node)
     {
         List<TId> params = GetParams(node.getParams());
+        ClassInfo returnType = GetExpEval(node.getReturnDecl());
         Token operatorToken = GetOperatorToken(node.getOperator());
-        this._currentClassInfo.GetMethodTable().Add(node, params, operatorToken);
+        this._currentClassInfo.GetMethodTable().Add(node, params, GetTypes(node.getParams()), returnType, operatorToken);
     }
 
     @Override
     public void caseAInternMethodMember(AInternMethodMember node)
     {
         List<TId> params = GetParams(node.getParams());
-        List<TClassName> paramsType = GetTypes(node.getParams());
-        this._currentClassInfo.GetMethodTable().Add(node, params);
+        List<ClassInfo> paramsType = GetTypes(node.getParams());
+        ClassInfo returnType = GetExpEval(node.getReturnDecl());
+        this._currentClassInfo.GetMethodTable().Add(node, params, paramsType, returnType);
     }
 
     @Override
@@ -521,7 +464,8 @@ public class SyntaxicChecker extends DepthFirstAdapter
     {
         List<TId> params = GetParams(node.getParams());
         Token operatorToken = GetOperatorToken(node.getOperator());
-        this._currentClassInfo.GetMethodTable().Add(node, params, operatorToken);
+        ClassInfo returnType = GetExpEval(node.getReturnDecl());
+        this._currentClassInfo.GetMethodTable().Add(node, params, GetTypes(node.getParams()), returnType, operatorToken);
     }
 
     //endregion
@@ -551,7 +495,18 @@ public class SyntaxicChecker extends DepthFirstAdapter
     @Override
     public void caseAParam(AParam node)
     {
-        this._idList.add(node.getId());
+        if(this._idList != null)
+        {
+            this._idList.add(node.getId());
+        }
+        else if(this._typeList != null)
+        {
+            this._typeList.add(node.getClassName());
+        }
+        else
+        {
+            throw new RuntimeException("Listes de type et d'id nulles");
+        }
         //TODO : Complete for type safety
     }
 
@@ -562,7 +517,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
     @Override
     public void caseAReturnDecl(AReturnDecl node)
     {
-        //TODO : Implement for type safety
+        this._expEval = this._classTable.Get(node.getClassName());
     }
 
     //endregion
@@ -676,7 +631,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
 
         if(!value.is_a(_booleanClassInfo))
         {
-            ThrowSemantic(node.getWhile().getLine(), node.getWhile().getPos());
+            ThrowSemantic(node.getWhile().getLine(), node.getWhile().getPos(), "L'expression du while n'est pas booléene");
         }
 
         Visit(node.getStmts());
@@ -693,7 +648,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
 
         if(!value.is_a(_booleanClassInfo))
         {
-            ThrowSemantic(node.getIf().getLine(), node.getIf().getPos());
+            ThrowSemantic(node.getIf().getLine(), node.getIf().getPos(), "L'expression du fi n'est pas booléenne");
         }
 
         Visit(node.getStmts());
@@ -716,7 +671,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
 
         if(!value.is_a(this._currentFrame.GetReturnType()))
         {
-            ThrowSemantic(node.getReturn().getLine(), node.getReturn().getPos());
+            ThrowSemantic(node.getReturn().getLine(), node.getReturn().getPos(), "Le type de retour ne correspond pas a celui de la fonction");
         }
 
         throw new ReturnException();
@@ -749,10 +704,10 @@ public class SyntaxicChecker extends DepthFirstAdapter
     public void caseAFieldAssignStmt(AFieldAssignStmt node)
     {
         ClassInfo value = GetExpEval(node.getExp());
-        Instance self = this._currentFrame.GetReceiver();
-        if (self.GetField(node.getFieldName()).is_a(value))
+        ClassInfo self = this._currentFrame.GetReceiver();
+        if (self.GetFieldTable().GetField(node.getFieldName().getText()).GetType().is_a(value))
         {
-            ThrowSemantic(node.getFieldName().getLine(), node.getFieldName().getPos());
+            ThrowSemantic(node.getFieldName().getLine(), node.getFieldName().getPos(), "L'expression de gauche n'est pas du type de la variable");
         }
     }
 
@@ -799,8 +754,8 @@ public class SyntaxicChecker extends DepthFirstAdapter
     public void caseAOrExp(AOrExp node)
     {
         BooleanClassInfo info = _booleanClassInfo;
-        Instance left = GetExpEval(node.getExp());
-        Instance right = GetExpEval(node.getConjunction());
+        ClassInfo left = GetExpEval(node.getExp());
+        ClassInfo right = GetExpEval(node.getConjunction());
 
         if (left.is_a(info))
         {
@@ -811,14 +766,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
             throw new InterpreterException("Le membre gauche de l'instruction OR n'est pas un booléen", node.getOr());
         }
 
-        if ((left == info.GetTrue()) || (right == info.GetTrue()))
-        {
-            this._expEval = info.GetTrue();
-        }
-        else
-        {
-            this._expEval = info.GetFalse();
-        }
+        this._expEval = info;
     }
 
     @Override
@@ -836,8 +784,8 @@ public class SyntaxicChecker extends DepthFirstAdapter
     public void caseAAndConjunction(AAndConjunction node)
     {
         BooleanClassInfo info = _booleanClassInfo;
-        Instance left = GetExpEval(node.getConjunction());
-        Instance right = GetExpEval(node.getComparison());
+        ClassInfo left = GetExpEval(node.getConjunction());
+        ClassInfo right = GetExpEval(node.getComparison());
 
         if (left.is_a(info))
         {
@@ -848,14 +796,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
             throw new InterpreterException("Le membre gauche de l'instruction AND n'est pas un booléen", node.getAnd());
         }
 
-        if (left == right)
-        {
-            this._expEval = info.GetTrue();
-        }
-        else
-        {
-            this._expEval = info.GetFalse();
-        }
+        this._expEval = info;
 
     }
 
@@ -872,42 +813,25 @@ public class SyntaxicChecker extends DepthFirstAdapter
     @Override
     public void caseAIsComparison(AIsComparison node)
     {
-        BooleanClassInfo info = _booleanClassInfo;
-        Instance left = GetExpEval(node.getComparison());
-        Instance right = GetExpEval(node.getArithExp());
-        if (left == right)
-        {
-            this._expEval = info.GetTrue();
-        }
-        else
-        {
-            this._expEval = info.GetFalse();
-        }
+        this._expEval = _booleanClassInfo;
     }
 
     @Override
     public void caseAEqComparison(AEqComparison node)
     {
         BooleanClassInfo info = _booleanClassInfo;
-        Instance left = GetExpEval(node.getComparison());
-        Instance right = GetExpEval(node.getArithExp());
+        ClassInfo left = GetExpEval(node.getComparison());
+        ClassInfo right = GetExpEval(node.getArithExp());
         if (left == null || right == null)
         {
-            if(left == right)
-            {
-                this._expEval = info.GetTrue();
-            }
-            else
-            {
-                this._expEval = info.GetFalse();
-            }
+            this._expEval = info;
         }
         else
         {
-            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getEq());
+            MethodInfo invokedMethod = left.GetMethodTable().GetMethodInfo(node.getEq());
             Frame frame = new Frame(this._currentFrame, left, invokedMethod);
             frame.SetParam(right);
-            this._ = Execute(invokedMethod, frame, node.getEq());
+            this._expEval = Execute(invokedMethod, frame, node.getEq());
         }
     }
 
@@ -915,22 +839,15 @@ public class SyntaxicChecker extends DepthFirstAdapter
     public void caseANeqComparison(ANeqComparison node)
     {
         BooleanClassInfo info = _booleanClassInfo;
-        Instance left = GetExpEval(node.getComparison());
-        Instance right = GetExpEval(node.getArithExp());
+        ClassInfo left = GetExpEval(node.getComparison());
+        ClassInfo right = GetExpEval(node.getArithExp());
         if (left == null || right == null)
         {
-            if(left != right)
-            {
-                this._expEval = info.GetTrue();
-            }
-            else
-            {
-                this._expEval = info.GetFalse();
-            }
+            this._expEval = info;
         }
         else
         {
-            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getNeq());
+            MethodInfo invokedMethod = left.GetMethodTable().GetMethodInfo(node.getNeq());
             Frame frame = new Frame(this._currentFrame, left, invokedMethod);
             frame.SetParam(right);
             this._expEval = Execute(invokedMethod, frame, node.getNeq());
@@ -941,15 +858,15 @@ public class SyntaxicChecker extends DepthFirstAdapter
     public void caseALtComparison(ALtComparison node)
     {
         BooleanClassInfo info = _booleanClassInfo;
-        Instance left = GetExpEval(node.getComparison());
-        Instance right = GetExpEval(node.getArithExp());
+        ClassInfo left = GetExpEval(node.getComparison());
+        ClassInfo right = GetExpEval(node.getArithExp());
         if (left == null || right == null)
         {
-            this._expEval = info.GetFalse();
+            this._expEval = info;
         }
         else
         {
-            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getLt());
+            MethodInfo invokedMethod = left.GetMethodTable().GetMethodInfo(node.getLt());
             Frame frame = new Frame(this._currentFrame, left, invokedMethod);
             frame.SetParam(right);
             this._expEval = Execute(invokedMethod, frame, node.getLt());
@@ -960,15 +877,15 @@ public class SyntaxicChecker extends DepthFirstAdapter
     public void caseAGtComparison(AGtComparison node)
     {
         BooleanClassInfo info = _booleanClassInfo;
-        Instance left = GetExpEval(node.getComparison());
-        Instance right = GetExpEval(node.getArithExp());
+        ClassInfo left = GetExpEval(node.getComparison());
+        ClassInfo right = GetExpEval(node.getArithExp());
         if (left == null || right == null)
         {
-            this._expEval = info.GetFalse();
+            this._expEval = info;
         }
         else
         {
-            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getGt());
+            MethodInfo invokedMethod = left.GetMethodTable().GetMethodInfo(node.getGt());
             Frame frame = new Frame(this._currentFrame, left, invokedMethod);
             frame.SetParam(right);
             this._expEval = Execute(invokedMethod, frame, node.getGt());
@@ -979,22 +896,15 @@ public class SyntaxicChecker extends DepthFirstAdapter
     public void caseALteqComparison(ALteqComparison node)
     {
         BooleanClassInfo info = _booleanClassInfo;
-        Instance left = GetExpEval(node.getComparison());
-        Instance right = GetExpEval(node.getArithExp());
+        ClassInfo left = GetExpEval(node.getComparison());
+        ClassInfo right = GetExpEval(node.getArithExp());
         if (left == null || right == null)
         {
-            if(left == right)
-            {
-                this._expEval = info.GetTrue();
-            }
-            else
-            {
-                this._expEval = info.GetFalse();
-            }
+            this._expEval = info;
         }
         else
         {
-            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getLteq());
+            MethodInfo invokedMethod = left.GetMethodTable().GetMethodInfo(node.getLteq());
             Frame frame = new Frame(this._currentFrame, left, invokedMethod);
             frame.SetParam(right);
             this._expEval = Execute(invokedMethod, frame, node.getLteq());
@@ -1005,22 +915,15 @@ public class SyntaxicChecker extends DepthFirstAdapter
     public void caseAGteqComparison(AGteqComparison node)
     {
         BooleanClassInfo info = _booleanClassInfo;
-        Instance left = GetExpEval(node.getComparison());
-        Instance right = GetExpEval(node.getArithExp());
+        ClassInfo left = GetExpEval(node.getComparison());
+        ClassInfo right = GetExpEval(node.getArithExp());
         if (left == null || right == null)
         {
-            if(left == right)
-            {
-                this._expEval = info.GetTrue();
-            }
-            else
-            {
-                this._expEval = info.GetFalse();
-            }
+            this._expEval = info;
         }
         else
         {
-            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getGteq());
+            MethodInfo invokedMethod = left.GetMethodTable().GetMethodInfo(node.getGteq());
             Frame frame = new Frame(this._currentFrame, left, invokedMethod);
             frame.SetParam(right);
             this._expEval = Execute(invokedMethod, frame, node.getGteq());
@@ -1040,8 +943,8 @@ public class SyntaxicChecker extends DepthFirstAdapter
     @Override
     public void caseAAddArithExp(AAddArithExp node)
     {
-        Instance left = GetExpEval(node.getArithExp());
-        Instance right = GetExpEval(node.getFactor());
+        ClassInfo left = GetExpEval(node.getArithExp());
+        ClassInfo right = GetExpEval(node.getFactor());
 
         if (left == null || right == null)
         {
@@ -1055,18 +958,18 @@ public class SyntaxicChecker extends DepthFirstAdapter
         }
         else
         {
-            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getPlus());
+            MethodInfo invokedMethod = left.GetMethodTable().GetMethodInfo(node.getPlus());
             Frame frame = new Frame(this._currentFrame, left, invokedMethod);
             frame.SetParam(right);
-            this._expEval = Execute(invokedMethod, frame, node.getPlus());
+            this._expEval = invokedMethod.GetReturnType();
         }
     }
 
     @Override
     public void caseASubArithExp(ASubArithExp node)
     {
-        Instance left = GetExpEval(node.getArithExp());
-        Instance right = GetExpEval(node.getFactor());
+        ClassInfo left = GetExpEval(node.getArithExp());
+        ClassInfo right = GetExpEval(node.getFactor());
 
         if (left == null || right == null)
         {
@@ -1080,7 +983,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
         }
         else
         {
-            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getMinus());
+            MethodInfo invokedMethod = left.GetMethodTable().GetMethodInfo(node.getMinus());
             Frame frame = new Frame(this._currentFrame, left, invokedMethod);
             frame.SetParam(right);
             this._expEval = Execute(invokedMethod, frame, node.getMinus());
@@ -1101,8 +1004,8 @@ public class SyntaxicChecker extends DepthFirstAdapter
     @Override
     public void caseAMulFactor(AMulFactor node)
     {
-        Instance left = GetExpEval(node.getLeftUnaryExp());
-        Instance right = GetExpEval(node.getFactor());
+        ClassInfo left = GetExpEval(node.getLeftUnaryExp());
+        ClassInfo right = GetExpEval(node.getFactor());
 
         if (left == null || right == null)
         {
@@ -1116,7 +1019,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
         }
         else
         {
-            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getStar());
+            MethodInfo invokedMethod = left.GetMethodTable().GetMethodInfo(node.getStar());
             Frame frame = new Frame(this._currentFrame, left, invokedMethod);
             frame.SetParam(right);
             this._expEval = Execute(invokedMethod, frame, node.getStar());
@@ -1126,8 +1029,8 @@ public class SyntaxicChecker extends DepthFirstAdapter
     @Override
     public void caseADivFactor(ADivFactor node)
     {
-        Instance left = GetExpEval(node.getLeftUnaryExp());
-        Instance right = GetExpEval(node.getFactor());
+        ClassInfo left = GetExpEval(node.getLeftUnaryExp());
+        ClassInfo right = GetExpEval(node.getFactor());
 
         if (left == null || right == null)
         {
@@ -1141,7 +1044,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
         }
         else
         {
-            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getSlash());
+            MethodInfo invokedMethod = left.GetMethodTable().GetMethodInfo(node.getSlash());
             Frame frame = new Frame(this._currentFrame, left, invokedMethod);
             frame.SetParam(right);
             this._expEval = Execute(invokedMethod, frame, node.getSlash());
@@ -1151,8 +1054,8 @@ public class SyntaxicChecker extends DepthFirstAdapter
     @Override
     public void caseAModFactor(AModFactor node)
     {
-        Instance left = GetExpEval(node.getLeftUnaryExp());
-        Instance right = GetExpEval(node.getFactor());
+        ClassInfo left = GetExpEval(node.getLeftUnaryExp());
+        ClassInfo right = GetExpEval(node.getFactor());
 
         if (left == null || right == null)
         {
@@ -1166,7 +1069,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
         }
         else
         {
-            MethodInfo invokedMethod = left.GetClassInfo().GetMethodTable().GetMethodInfo(node.getPercent());
+            MethodInfo invokedMethod = left.GetMethodTable().GetMethodInfo(node.getPercent());
             Frame frame = new Frame(this._currentFrame, left, invokedMethod);
             frame.SetParam(right);
             this._expEval = Execute(invokedMethod, frame, node.getPercent());
@@ -1194,28 +1097,22 @@ public class SyntaxicChecker extends DepthFirstAdapter
     public void caseAIsaRightUnaryExp(AIsaRightUnaryExp node)
     {
         BooleanClassInfo info = _booleanClassInfo;
-        Instance left = GetExpEval(node.getRightUnaryExp());
+        ClassInfo left = GetExpEval(node.getRightUnaryExp());
         ClassInfo right = this._classTable.Get(node.getClassName());
 
-        if (left == null)
-        {
-            this._expEval = info.GetFalse();
-        }
-        else if (left.is_a(right))
-        {
-            this._expEval = info.GetTrue();
-        }
-        else
-        {
-            this._expEval = info.GetFalse();
-        }
+        this._expEval = info;
     }
 
     @Override
     public void caseAAsRightUnaryExp(AAsRightUnaryExp node)
     {
-        //TODO : Implémenter
-        throw new NotImplementedException();
+
+
+        if (!GetExpEval(node.getRightUnaryExp()).is_a(_classTable.Get(node.getClassName())))
+        {
+            ThrowSemantic(node.getAs().getPos(), node.getAs().getLine(), "L'expression de gauche n'est pas un supertype du type spécifié");
+        }
+
     }
 
     @Override
@@ -1232,34 +1129,26 @@ public class SyntaxicChecker extends DepthFirstAdapter
     @Override
     public void caseANotLeftUnaryExp(ANotLeftUnaryExp node)
     {
-        Instance value = GetExpEval(node.getLeftUnaryExp());
+        ClassInfo value = GetExpEval(node.getLeftUnaryExp());
         BooleanClassInfo info = _booleanClassInfo;
         if(value == null)
         {
             throw new InterpreterException("expression is null", node.getNot());
         }
 
-        if (value == _booleanClassInfo.GetTrue())
-        {
-            this._expEval = info.GetFalse();
-        }
-        else
-        {
-            this._expEval = info.GetTrue();
-        }
+        this._expEval = value;
     }
 
     @Override
     public void caseANegLeftUnaryExp(ANegLeftUnaryExp node)
     {
-        Instance value = GetExpEval(node.getLeftUnaryExp());
+        ClassInfo value = GetExpEval(node.getLeftUnaryExp());
         if(!(value.is_a(_integerClassInfo)))
         {
             throw new InterpreterException("IL est seulement possible d'avoir un entier négatif", node.getMinus());
         }
 
-        (_integerClassInfo)
-                .NewInteger(((IntegerInstance) value).GetValue().negate());
+        this._expEval = _integerClassInfo;
     }
 
     @Override
@@ -1298,14 +1187,14 @@ public class SyntaxicChecker extends DepthFirstAdapter
             throw new InterpreterException("Utilisation invalide de l'opérateur new", node.getNew());
         }
 
-        this._expEval = classInfo.NewInstance();
+        this._expEval = classInfo;
     }
 
     @Override
     public void caseAFieldTerm(AFieldTerm node)
     {
-        Instance self = this._currentFrame.GetReceiver();
-        this._expEval = self.GetField(node.getFieldName());
+        ClassInfo self = this._currentFrame.GetReceiver();
+        this._expEval = self.GetFieldTable().GetField(node.getFieldName().getText()).GetType();
     }
 
     @Override
@@ -1317,8 +1206,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
     @Override
     public void caseANumTerm(ANumTerm node)
     {
-        this._expEval = (_integerClassInfo)
-                .NewInteger(new BigInteger(node.getNumber().getText()));
+        this._expEval = _integerClassInfo;
     }
 
     @Override
@@ -1336,13 +1224,13 @@ public class SyntaxicChecker extends DepthFirstAdapter
     @Override
     public void caseATrueTerm(ATrueTerm node)
     {
-        this._expEval = _booleanClassInfo.GetTrue();
+        this._expEval = _booleanClassInfo;
     }
 
     @Override
     public void caseAFalseTerm(AFalseTerm node)
     {
-        this._expEval = _booleanClassInfo.GetFalse();
+        this._expEval = _booleanClassInfo;
     }
 
     @Override
@@ -1353,8 +1241,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
         string = string.substring(1, string.length() - 1);
         //Handling escaped characters, we don't want to negate the effect of the control chars (\t \b \n \r \f)
         string = string.replaceAll("\\\\([^tbnrtf])","$1");
-        this._expEval = _stringClassInfo
-                .NewString(string);
+        this._expEval = _stringClassInfo;
     }
 
 
@@ -1367,7 +1254,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
     {
         List<PExp> expList = GetExpList(node.getArgs());
 
-        Instance receiver = GetExpEval(node.getRightUnaryExp());
+        ClassInfo receiver = GetExpEval(node.getRightUnaryExp());
 
         if (receiver == null)
         {
@@ -1375,7 +1262,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
                     node.getId());
         }
 
-        MethodInfo invokedMethod = receiver.GetClassInfo().GetMethodTable().GetMethodInfo(node.getId());
+        MethodInfo invokedMethod = receiver.GetMethodTable().GetMethodInfo(node.getId());
 
         if(invokedMethod.GetParamCount() != expList.size())
         {
@@ -1390,8 +1277,10 @@ public class SyntaxicChecker extends DepthFirstAdapter
         {
             frame.SetParam(GetExpEval(exp));
         }
-
-        this._expEval = Execute(invokedMethod, frame, node.getId());
+        
+        //On ne veut surtout pas exécuter la méthode...., dans le cas d'une méthode récursive, le vérificateur exploserait (StackOverflow Error)
+        //Puisque auune valeur n'est effectivement calculée, on entrerait dans une boucle de récursion infinie !!!!
+        this._expEval = invokedMethod.GetReturnType();
     }
 
     @Override
@@ -1399,7 +1288,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
     {
         List<PExp> expList = GetExpList(node.getArgs());
 
-        Instance receiver = this._currentFrame.GetReceiver();
+        ClassInfo receiver = this._currentFrame.GetReceiver();
 
         if (receiver == null)
         {
@@ -1407,7 +1296,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
                     node.getId());
         }
 
-        MethodInfo invokedMethod = receiver.GetClassInfo().GetMethodTable().GetMethodInfo(node.getId());
+        MethodInfo invokedMethod = receiver.GetMethodTable().GetMethodInfo(node.getId());
 
         if(invokedMethod.GetParamCount() != expList.size())
         {
@@ -1423,7 +1312,9 @@ public class SyntaxicChecker extends DepthFirstAdapter
             frame.SetParam(GetExpEval(exp));
         }
 
-        this._expEval = Execute(invokedMethod, frame, node.getId());
+        //On ne veut surtout pas exécuter la méthode...., dans le cas d'une méthode récursive, le vérificateur exploserait (StackOverflow Error)
+        //Puisque auune valeur n'est effectivement calculée, on entrerait dans une boucle de récursion infinie !!!!
+        this._expEval = invokedMethod.GetReturnType();
     }
 
 

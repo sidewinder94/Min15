@@ -21,11 +21,10 @@ public class MethodTable
         this._classInfo = classInfo;
     }
 
-    //Possibilité d'amélioration de SableCC => Interfaces indiquant les tokens composant un noeud => permettrait de réduire la duplication de code
 
-    public <T extends PMember> void Add(T definition, List<TId> params)
+    public <T extends PMember> void Add(T definition, List<TId> params, List<ClassInfo> paramsTypes, ClassInfo returnType)
     {
-        Add(definition, params, null);
+        Add(definition, params, paramsTypes, returnType, null);
     }
 
     public <T extends PMember> void Add(T definition, List<TId> params, List<ClassInfo> paramsTypes, ClassInfo returnType, Token operatorToken)
@@ -79,56 +78,6 @@ public class MethodTable
         this._nameToMethodInfoMap.put(name, methodInfo);
     }
 
-    public <T extends PMember> void Add(T definition, List<TId> params, Token operatorToken)
-    {
-        Token nameToken = null;
-        String kind = "Opérateur";
-
-        if (definition instanceof AMethodMember ||
-            definition instanceof AInternMethodMember)
-        {
-            if (definition instanceof AMethodMember)
-            {
-                nameToken = ((AMethodMember) definition).getId();
-            }
-            else
-            {
-                nameToken = ((AInternMethodMember) definition).getId();
-            }
-            kind = "Méthode";
-        }
-
-        String name = operatorToken == null ? nameToken.getText() : operatorToken.getText();
-
-        if (this._nameToMethodInfoMap.containsKey(name))
-        {
-            throw new InterpreterException(kind + " déjà définie " + name, operatorToken == null ? nameToken : operatorToken);
-        }
-
-        MethodInfo methodInfo = null;
-
-        if (definition instanceof AMethodMember)
-        {
-            methodInfo = new NormalMethodInfo(this, (AMethodMember)definition, params);
-        }
-        else if (definition instanceof AInternMethodMember)
-        {
-            methodInfo = new PrimitiveNormalMethodInfo(this, (AInternMethodMember)definition, params);
-        }
-        else if (definition instanceof AOperatorMember)
-        {
-            methodInfo = new OperatorMethodInfo(this, (AOperatorMember)definition, params,  operatorToken);
-        }
-        else if (definition instanceof AInternOperatorMember)
-        {
-            methodInfo = new PrimitiveOperatorMethodInfo(this, (AInternOperatorMember)definition, params, operatorToken);
-        }
-        else
-        {
-            throw new InterpreterException("Mauvais type", operatorToken == null ? nameToken : operatorToken);
-        }
-        this._nameToMethodInfoMap.put(name, methodInfo);
-    }
 
     private MethodInfo GetMethodInfoOrNull(String name)
     {

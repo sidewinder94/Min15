@@ -1,6 +1,6 @@
 package min15.structure;
 
-import min15.Interpreter.InterpreterEngine;
+
 import min15.Interpreter.SyntaxicChecker;
 import min15.exceptions.InterpreterException;
 import node.TId;
@@ -71,8 +71,6 @@ public abstract class MethodInfo
     {
         return this._paramNames.size();
     }
-
-    public abstract void Execute(InterpreterEngine interpreter);
 
     public abstract void Execute(SyntaxicChecker checker);
 

@@ -11,6 +11,8 @@ public final class AFieldMember extends PMember
     private final LinkedList<TEol> _eols_ = new LinkedList<TEol>();
     private TVar _var_;
     private TFieldName _fieldName_;
+    private TColon _colon_;
+    private TClassName _className_;
     private TEol _eol_;
 
     public AFieldMember()
@@ -22,6 +24,8 @@ public final class AFieldMember extends PMember
         @SuppressWarnings("hiding") List<?> _eols_,
         @SuppressWarnings("hiding") TVar _var_,
         @SuppressWarnings("hiding") TFieldName _fieldName_,
+        @SuppressWarnings("hiding") TColon _colon_,
+        @SuppressWarnings("hiding") TClassName _className_,
         @SuppressWarnings("hiding") TEol _eol_)
     {
         // Constructor
@@ -30,6 +34,10 @@ public final class AFieldMember extends PMember
         setVar(_var_);
 
         setFieldName(_fieldName_);
+
+        setColon(_colon_);
+
+        setClassName(_className_);
 
         setEol(_eol_);
 
@@ -42,6 +50,8 @@ public final class AFieldMember extends PMember
             cloneList(this._eols_),
             cloneNode(this._var_),
             cloneNode(this._fieldName_),
+            cloneNode(this._colon_),
+            cloneNode(this._className_),
             cloneNode(this._eol_));
     }
 
@@ -127,6 +137,56 @@ public final class AFieldMember extends PMember
         this._fieldName_ = node;
     }
 
+    public TColon getColon()
+    {
+        return this._colon_;
+    }
+
+    public void setColon(TColon node)
+    {
+        if(this._colon_ != null)
+        {
+            this._colon_.parent(null);
+        }
+
+        if(node != null)
+        {
+            if(node.parent() != null)
+            {
+                node.parent().removeChild(node);
+            }
+
+            node.parent(this);
+        }
+
+        this._colon_ = node;
+    }
+
+    public TClassName getClassName()
+    {
+        return this._className_;
+    }
+
+    public void setClassName(TClassName node)
+    {
+        if(this._className_ != null)
+        {
+            this._className_.parent(null);
+        }
+
+        if(node != null)
+        {
+            if(node.parent() != null)
+            {
+                node.parent().removeChild(node);
+            }
+
+            node.parent(this);
+        }
+
+        this._className_ = node;
+    }
+
     public TEol getEol()
     {
         return this._eol_;
@@ -159,6 +219,8 @@ public final class AFieldMember extends PMember
             + toString(this._eols_)
             + toString(this._var_)
             + toString(this._fieldName_)
+            + toString(this._colon_)
+            + toString(this._className_)
             + toString(this._eol_);
     }
 
@@ -180,6 +242,18 @@ public final class AFieldMember extends PMember
         if(this._fieldName_ == child)
         {
             this._fieldName_ = null;
+            return;
+        }
+
+        if(this._colon_ == child)
+        {
+            this._colon_ = null;
+            return;
+        }
+
+        if(this._className_ == child)
+        {
+            this._className_ = null;
             return;
         }
 
@@ -223,6 +297,18 @@ public final class AFieldMember extends PMember
         if(this._fieldName_ == oldChild)
         {
             setFieldName((TFieldName) newChild);
+            return;
+        }
+
+        if(this._colon_ == oldChild)
+        {
+            setColon((TColon) newChild);
+            return;
+        }
+
+        if(this._className_ == oldChild)
+        {
+            setClassName((TClassName) newChild);
             return;
         }
 

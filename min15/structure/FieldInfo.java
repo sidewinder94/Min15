@@ -11,13 +11,31 @@ public class FieldInfo
 
     private final AFieldMember _definition;
 
+    private final ClassInfo _type;
+
+    public FieldInfo(FieldTable fieldTable, AFieldMember definition, ClassInfo type) {
+        this._fieldTable = fieldTable;
+        this._definition = definition;
+        this._type = type;
+    }
+
     public FieldInfo(FieldTable fieldTable, AFieldMember definition) {
         this._fieldTable = fieldTable;
         this._definition = definition;
+        this._type = null;
     }
 
     public String GetName()
     {
         return this._definition.getFieldName().getText();
+    }
+    public ClassInfo GetType()
+    {
+        return _type;
+    }
+
+    public AFieldMember GetDefinition()
+    {
+        return _definition;
     }
 }

@@ -1,6 +1,6 @@
 package min15.structure;
 
-import min15.Interpreter.InterpreterEngine;
+
 import min15.Interpreter.SyntaxicChecker;
 import min15.exceptions.InterpreterException;
 import node.AInternMethodMember;
@@ -102,24 +102,6 @@ public class PrimitiveNormalMethodInfo extends MethodInfo
         return this._definition.getId().getText();
     }
 
-    @Override
-    public void Execute(InterpreterEngine interpreter)
-    {
-        switch(this._operation)
-        {
-            case OBJECT_ABORT:
-                interpreter.ObjectAbort(this);
-                break;
-            case INTEGER_TO_S:
-                interpreter.IntegerToS(this);
-                break;
-            case STRING_TO_SYSTEM_OUT:
-                interpreter.StringToSystemOut(this);
-                break;
-            default:
-                throw new RuntimeException("Cas non défini");
-        }
-    }
 
     @Override
     public void Execute(SyntaxicChecker interpreter)

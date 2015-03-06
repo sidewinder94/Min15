@@ -1,6 +1,6 @@
 package min15.structure;
 
-import min15.Interpreter.InterpreterEngine;
+
 import min15.Interpreter.SyntaxicChecker;
 import node.AMethodMember;
 import node.TId;
@@ -32,11 +32,6 @@ public class NormalMethodInfo extends MethodInfo
         return this._definition.getId().getText();
     }
 
-    @Override
-    public void Execute(InterpreterEngine interpreter)
-    {
-        interpreter.Visit(this._definition.getStmts());
-    }
 
     @Override
     public void Execute(SyntaxicChecker checker)

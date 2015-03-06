@@ -90,7 +90,7 @@ Productions
     eol super class_name;
 
   member =
-    {field} [eols]:eol* var field_name eol |
+    {field} [eols]:eol* var field_name colon class_name eol |
     {method} [eols]:eol* fun id l_par params? r_par return_decl? [eol1]:eol? do [eol2]:eol stmts end [eol3]:eol |
     {operator} [eols]:eol* fun operator l_par params? r_par return_decl? [eol1]:eol? do [eol2]:eol stmts end [eol3]:eol |
     {intern_method} [eols]:eol* intern fun id l_par params? r_par return_decl? eol |

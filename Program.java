@@ -2,7 +2,7 @@
  * Created by Antoine-Ali on 18/02/2015.
  */
 
-import min15.Interpreter.InterpreterEngine;
+
 import min15.Interpreter.SyntaxicChecker;
 import min15.exceptions.InterpreterException;
 import lexer.Lexer;
@@ -74,18 +74,16 @@ public class Program {
             System.exit(1);
         }
 
-        InterpreterEngine interpreter = new InterpreterEngine();
         SyntaxicChecker checker = new SyntaxicChecker();
         try
         {
             checker.Visit(rootNode);
-            //interpreter.Visit(rootNode);
         }
         catch(InterpreterException e)
         {
             System.out.flush();
             System.err.println("[ERREUR][INTERPRETEUR] : " + e.getMessage() + ".");
-            interpreter.PrintStackTrace();
+            checker.PrintStackTrace();
             System.exit(1);
         }
         catch(SemanticException e)
