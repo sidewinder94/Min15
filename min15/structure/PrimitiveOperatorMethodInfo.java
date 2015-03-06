@@ -13,6 +13,7 @@ import java.util.List;
  */
 public class PrimitiveOperatorMethodInfo extends MethodInfo
 {
+    
     private static enum Operation
     {
         STRING_PLUS,
