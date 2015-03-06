@@ -64,7 +64,10 @@ public abstract class MethodInfo
     {
         return this._paramNames.get(i);
     }
-
+    public ClassInfo GetParamType(int i)
+    {
+        return this._paramTypes.get(i);
+    }
 
     public ClassInfo GetReturnType(){return this._returnType;}
     public int GetParamCount()

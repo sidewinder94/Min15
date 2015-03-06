@@ -18,6 +18,8 @@ import java.util.*;
 public class SyntaxicChecker extends DepthFirstAdapter
 {
     //region Membres
+    private Boolean methodCalled = false;
+
     private final ClassTable _classTable = new ClassTable();
 
     private ClassInfo _currentClassInfo;
@@ -671,10 +673,10 @@ public class SyntaxicChecker extends DepthFirstAdapter
 
         if(!value.is_a(this._currentFrame.GetReturnType()))
         {
-            ThrowSemantic(node.getReturn().getLine(), node.getReturn().getPos(), "Le type de retour ne correspond pas a celui de la fonction");
+            ThrowSemantic(node.getReturn().getLine(), node.getReturn().getPos(), "Le type de retour (" + value.GetName()
+                    + ") ne correspond pas a celui de la fonction (" + this._currentFrame.GetReturnType().GetName() + ")");
         }
 
-        throw new ReturnException();
 
     }
 
@@ -1272,7 +1274,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
         }
 
         Frame frame = new Frame(this._currentFrame, receiver, invokedMethod);
-
+        frame.SetCurrentLocation(node.getDot());
         for(PExp exp : expList)
         {
             frame.SetParam(GetExpEval(exp));
@@ -1280,7 +1282,14 @@ public class SyntaxicChecker extends DepthFirstAdapter
         
         //On ne veut surtout pas exécuter la méthode...., dans le cas d'une méthode récursive, le vérificateur exploserait (StackOverflow Error)
         //Puisque auune valeur n'est effectivement calculée, on entrerait dans une boucle de récursion infinie !!!!
+        if (!this.methodCalled)
+        {
+            this.methodCalled = true;
+            this.Execute(invokedMethod, frame, node.getDot());
+        }
+
         this._expEval = invokedMethod.GetReturnType();
+        this.methodCalled = false;
     }
 
     @Override
@@ -1306,7 +1315,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
         }
 
         Frame frame = new Frame(this._currentFrame, receiver, invokedMethod);
-
+        frame.SetCurrentLocation(node.getLPar());
         for(PExp exp : expList)
         {
             frame.SetParam(GetExpEval(exp));
@@ -1314,7 +1323,14 @@ public class SyntaxicChecker extends DepthFirstAdapter
 
         //On ne veut surtout pas exécuter la méthode...., dans le cas d'une méthode récursive, le vérificateur exploserait (StackOverflow Error)
         //Puisque auune valeur n'est effectivement calculée, on entrerait dans une boucle de récursion infinie !!!!
+        if (!this.methodCalled)
+        {
+            this.methodCalled = true;
+            this.Execute(invokedMethod, frame, node.getLPar());
+        }
         this._expEval = invokedMethod.GetReturnType();
+
+        this.methodCalled = false;
     }
 
 

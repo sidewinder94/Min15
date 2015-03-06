@@ -32,19 +32,17 @@ class Integer
   intern fun *(i: Integer): Integer
 
 
-  fun factor() do
+  fun factor() : Integer do
     if self > 1 then
         return self * (self - 1).factor()
     else
-        return 1
+        return "1" #Plante sur le 1 car le type de retour n'est pas celui attendu
     end
   end
 end
 
-
-
 # ecrire: Hello World
-print("Hello ".concat("world!"))
+print("Hello ".concat(1)) #Plante, la vérification de types détecte que 1 n'est pas une chaine de caractères
 
 
 # ecrire: 1
@@ -57,7 +55,6 @@ while i < 5 do
     print(a)
     i = i + 1
 end
-
 
 print(i)
 

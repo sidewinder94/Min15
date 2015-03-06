@@ -1,6 +1,6 @@
 package min15.structure;
 
-import min15.exceptions.InterpreterException;
+import min15.exceptions.*;
 import node.TId;
 import node.Token;
 
@@ -95,7 +95,16 @@ public class Frame
 
     public void SetParam(ClassInfo value)
     {
-        String paramName = this._invokedMethod.GetParamName(this._nextParamIndex++);
+        int paramId = this._nextParamIndex++;
+        String paramName = this._invokedMethod.GetParamName(paramId);
+        if (!value.is_a(this._invokedMethod.GetParamType(paramId)))
+        {
+            throw new SemanticException("Le parametre " + paramName + "(n°" + paramId+ ") est du type " + value.GetName() +
+                    " qui n'est pas compatible avec le type attenu : " + this._invokedMethod.GetParamType(paramId).GetName() +
+                    " [" + this._currentLocation.getLine() + ", " + this._currentLocation.getPos() +"]");
+        }
+
+
         this._varNameToClassInfoMap.put(paramName,value);
     }
 
