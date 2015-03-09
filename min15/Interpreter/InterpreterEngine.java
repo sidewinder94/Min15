@@ -430,7 +430,10 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseAFile(AFile node)
     {
-        node.getClassDefs().forEach(this::Visit);
+        for(PClassDef classDef : node.getClassDefs())
+        {
+            Visit(classDef);
+        }
 
         HandleCompilerKnownClasses();
 
@@ -626,7 +629,10 @@ public class InterpreterEngine extends DepthFirstAdapter
     @Override
     public void caseAStmts(AStmts node)
     {
-        node.getStmts().forEach(this::Visit);
+        for(PStmt stmt : node.getStmts())
+        {
+            Visit(stmt);
+        }
     }
     //endregion
 
@@ -1416,7 +1422,10 @@ public class InterpreterEngine extends DepthFirstAdapter
     public void caseAArgs(AArgs node)
     {
         Visit(node.getArg());
-        node.getAdditionalArgs().forEach(this::Visit);
+        for(PAdditionalArg paarg : node.getAdditionalArgs())
+        {
+            Visit(paarg);
+        }
     }
 
     @Override
