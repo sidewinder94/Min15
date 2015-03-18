@@ -81,6 +81,18 @@ public class ClassTable {
     }
 
 
+    public String PrintClassTable()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for(ClassInfo klass : this._nameToClassInfoMap.values())
+        {
+            klass.PrintVirtualTable(sb);
+        }
+
+        return sb.toString();
+    }
+
 
 
 

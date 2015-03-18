@@ -6,6 +6,7 @@ import node.*;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Antoine-Ali on 18/02/2015.
@@ -78,6 +79,11 @@ public class MethodTable
         this._nameToMethodInfoMap.put(name, methodInfo);
     }
 
+
+    public Set<String> GetMethodNames()
+    {
+        return this._nameToMethodInfoMap.keySet();
+    }
 
     private MethodInfo GetMethodInfoOrNull(String name)
     {

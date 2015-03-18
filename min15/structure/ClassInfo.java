@@ -4,6 +4,8 @@ import min15.exceptions.InterpreterException;
 import node.AClassDef;
 import node.ASuperDecl;
 
+import java.util.*;
+
 /**
  * Created by Antoine-Ali on 18/02/2015.
  */
@@ -99,5 +101,35 @@ public class ClassInfo {
         }
 
         return false;
+    }
+
+
+    private Map<String, ClassInfo> GetMethodMap()
+    {
+        Set<String> methods = this._methodTable.GetMethodNames();
+        Map<String, ClassInfo> methodsAssoc = new LinkedHashMap<>();
+        if(this._superClass != null)
+        {
+            methodsAssoc = this._superClass.GetMethodMap();
+        }
+        for(String method : methods)
+        {
+            methodsAssoc.put(method, this);
+        }
+
+        return methodsAssoc;
+
+    }
+
+    public void PrintVirtualTable(StringBuilder sb)
+    {
+        sb.append("Class " + GetName() + "\n");
+        int i = 0;
+        for(Map.Entry<String, ClassInfo> entry : GetMethodMap().entrySet())
+        {
+            i++;
+            sb.append(i + " : " + entry.getValue().GetName() + "." + entry.getKey() + "\n");
+        }
+        sb.append("\n");
     }
 }

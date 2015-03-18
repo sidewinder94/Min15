@@ -75,9 +75,12 @@ public class Program {
         }
 
         SyntaxicChecker checker = new SyntaxicChecker();
-        try
+        try (PrintWriter pw = new PrintWriter("output.txt"))
         {
             checker.Visit(rootNode);
+
+            pw.write(checker.GetClassTable().PrintClassTable());
+
         }
         catch(InterpreterException e)
         {
@@ -89,6 +92,9 @@ public class Program {
         catch(SemanticException e)
         {
             System.err.println("[ERREUR][SEMANTIC] : " + e.getMessage());
+        } catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
         }
 
         System.exit(0);

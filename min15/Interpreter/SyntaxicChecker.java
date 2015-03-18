@@ -54,6 +54,13 @@ public class SyntaxicChecker extends DepthFirstAdapter
             node.apply(this);
         }
     }
+
+
+    public ClassTable GetClassTable()
+    {
+        return this._classTable;
+    }
+
     public void PrintStackTrace()
     {
         Frame frame = this._currentFrame;
