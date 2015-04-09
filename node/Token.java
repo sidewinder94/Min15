@@ -39,6 +39,17 @@ public abstract class Token extends Node
         this.pos = pos;
     }
 
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if(obj instanceof Token)
+        {
+            return text.equals(((Token)obj).text);
+        }
+        return false;
+    }
+
     @Override
     public String toString()
     {

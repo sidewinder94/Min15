@@ -6,7 +6,6 @@ import min15.structure.ClassInfo;
 import min15.structure.ClassTable;
 import min15.structure.FileStatistics;
 import min15.structure.MethodInfo;
-import node.TClassName;
 import node.Token;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -44,19 +43,19 @@ public class Comparison
         //if(cheatProbability >= 100) return;
 
         Double classNumberSimilarity = 0.0d;
-        Double classNamesDifference = 0.0d;
+        Double classNamesSimilarity = 0.0d;
         Double methodNumberSimilarity = 0.0d;
 
 
         classNumberSimilarity = ((double)tested.classNames.size() * 100.0d) / (double)original.classNames.size();
 
-        classNamesDifference = computeClassNameDifference(classNumberSimilarity);
+        classNamesSimilarity = computeClassNameSimilarity(classNumberSimilarity);
 
         methodNumberSimilarity = computeMethodNumberSimilarity();
 
 
         Tuple[] array = new Tuple[methodSimilarities.size() + 4];
-        array[0] = new Tuple<>(classNamesDifference, 1.0d);
+        array[0] = new Tuple<>(classNamesSimilarity, 1.0d);
         array[1] = new Tuple<>(classNumberSimilarity, 1.0d);
         array[2] = new Tuple<>(methodNumberSimilarity, 1.0d);
         array[3] = new Tuple<>(linesSimilarity, 2.0d);
@@ -69,12 +68,12 @@ public class Comparison
         average(array);
     }
 
-    private Double computeClassNameDifference(Double classNamesDifference)
+    private Double computeClassNameSimilarity(Double classNamesSimilarity)
     {
         int diffCount = 0;
         //Taking the smallest
-        Dictionary<String, Set<String>> smallest = classNamesDifference > 100.0d ? original.classNames : tested.classNames;
-        Dictionary<String, Set<String>> larger = classNamesDifference > 100.0d ? tested.classNames : original.classNames;
+        Dictionary<String, Set<String>> smallest = classNamesSimilarity > 100.0d ? original.classNames : tested.classNames;
+        Dictionary<String, Set<String>> larger = classNamesSimilarity > 100.0d ? tested.classNames : original.classNames;
 
         Set<String> commonClasses = new LinkedHashSet<>();
 
@@ -94,10 +93,9 @@ public class Comparison
                 commonClasses.add(name);
             }
         }
-        classNamesDifference = (((double)diffCount * 100.0d) / (double)larger.size());
         methodSimilarities = new LinkedList<>();
         computeMethodSimilarities(commonClasses);
-        return classNamesDifference;
+        return 100.0d - (((double)diffCount * 100.0d) / (double)larger.size());
     }
 
     private void computeMethodSimilarities(Set<String> commonClasses)
@@ -144,6 +142,8 @@ public class Comparison
             Boolean found = false;
             for(; indexT < testedList.size(); indexT++)
             {
+                if (found) break;
+
                 if(originalList.get(indexO).equals(testedList.get(indexT)))
                 {
                     longestMatchingTokens++;
