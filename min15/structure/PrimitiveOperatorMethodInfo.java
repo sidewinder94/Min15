@@ -4,6 +4,7 @@ package min15.structure;
 import min15.Interpreter.SyntaxicChecker;
 import min15.exceptions.InterpreterException;
 import node.AInternOperatorMember;
+import node.AStmts;
 import node.TId;
 import node.Token;
 
@@ -163,5 +164,11 @@ public class PrimitiveOperatorMethodInfo extends MethodInfo
             default:
                 throw new RuntimeException("Cas non géré");
         }
+    }
+
+    @Override
+    public AStmts getDefinition()
+    {
+        return null;
     }
 }

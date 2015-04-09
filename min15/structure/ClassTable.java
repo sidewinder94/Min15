@@ -64,6 +64,16 @@ public class ClassTable {
         return this._nameToClassInfoMap.get(name);
     }
 
+    public ClassInfo Get(String className)
+    {
+        if(!this._nameToClassInfoMap.containsKey(className))
+        {
+            throw new StringIndexOutOfBoundsException("La classe " + className + "n'a pas encore été définie");
+        }
+
+        return this._nameToClassInfoMap.get(className);
+    }
+
     public BooleanClassInfo GetBooleanClassInfoOrNull()
     {
         return (BooleanClassInfo)this._nameToClassInfoMap.get("Boolean");

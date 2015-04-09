@@ -16,6 +16,12 @@ public class OperatorMethodInfo extends MethodInfo
     private final Token _operatorToken;
     public static final String[] _operators = {"+", "-", "/", "*", "%", "<", "<=", ">", ">=", "==", "!="};
 
+    @Override
+    public AStmts getDefinition()
+    {
+        return (AStmts)_definition.getStmts();
+    }
+
     public OperatorMethodInfo(MethodTable methodTable, AOperatorMember definition, List<TId> params, List<ClassInfo> paramTypes, ClassInfo returnType, Token operatorToken)
     {
 

@@ -3,6 +3,8 @@ package min15.structure;
 
 import min15.Interpreter.SyntaxicChecker;
 import min15.exceptions.InterpreterException;
+import node.AStmts;
+import node.Node;
 import node.TId;
 
 import java.util.*;
@@ -76,6 +78,8 @@ public abstract class MethodInfo
     }
 
     public abstract void Execute(SyntaxicChecker checker);
+
+    public abstract AStmts getDefinition();
 
     public ClassInfo GetClassInfo()
     {

@@ -4,8 +4,11 @@ package min15.structure;
 import min15.Interpreter.SyntaxicChecker;
 import min15.exceptions.InterpreterException;
 import node.AInternMethodMember;
+import node.AStmts;
 import node.TId;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import javax.naming.OperationNotSupportedException;
 import java.util.List;
 
 /**
@@ -120,5 +123,11 @@ public class PrimitiveNormalMethodInfo extends MethodInfo
             default:
                 throw new RuntimeException("Cas non défini");
         }
+    }
+
+    @Override
+    public AStmts getDefinition()
+    {
+        return null;
     }
 }

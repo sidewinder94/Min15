@@ -112,6 +112,19 @@ public class MethodTable
         return methodInfo;
     }
 
+    public MethodInfo GetMethodInfo(String name)
+    {
+        MethodInfo methodInfo = GetMethodInfoOrNull(name);
+
+        if (methodInfo == null)
+        {
+            throw new StringIndexOutOfBoundsException("La classe " + this._classInfo.GetName() + " n'a pas de méthode " + name);
+        }
+
+        return methodInfo;
+    }
+
+
     public ClassInfo GetClassInfo()
     {
         return this._classInfo;

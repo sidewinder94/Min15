@@ -20,7 +20,7 @@ public class SyntaxicChecker extends DepthFirstAdapter
     //region Membres
     private Boolean methodCalled = false;
 
-    private final ClassTable _classTable = new ClassTable();
+    public final ClassTable _classTable = new ClassTable();
 
     private ClassInfo _currentClassInfo;
 

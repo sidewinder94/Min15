@@ -3,6 +3,8 @@ package min15.structure;
 
 import min15.Interpreter.SyntaxicChecker;
 import node.AMethodMember;
+import node.AStmts;
+import node.Node;
 import node.TId;
 
 import java.util.List;
@@ -13,6 +15,14 @@ import java.util.List;
 public class NormalMethodInfo extends MethodInfo
 {
     private final AMethodMember _definition;
+
+
+    @Override
+    public AStmts getDefinition()
+    {
+        return (AStmts)_definition.getStmts();
+    }
+
 
     public NormalMethodInfo(MethodTable methodTable, AMethodMember definition, List<TId> params)
     {

@@ -8,7 +8,11 @@ import min15.exceptions.InterpreterException;
 import lexer.Lexer;
 import lexer.LexerException;
 import min15.exceptions.SemanticException;
+import min15.statistics.Comparison;
+import min15.statistics.FileSearch;
+import min15.statistics.WidthSearch;
 import node.Node;
+import node.Start;
 import parser.Parser;
 import parser.ParserException;
 
@@ -18,37 +22,44 @@ public class Program {
 
 
     public static void main(String[] args) {
-        Reader in = null;
-
+        Reader original = null;
+        Reader tested = null;
         if (args.length == 0)
         {
-            //Si pas d'argument, on lit depuis l'entrée standard
-            in = new InputStreamReader(System.in);
+            System.out.println("Need ");
         }
-        else if (args.length == 1)
+        else if (args.length == 2)
         {
             try
             {
-                in = new FileReader(args[0]);
+                original = new FileReader(args[0]);
+                tested = new FileReader(args[1]);
+                FileSearch.computeLineDifference(args[0], args[1]);
             }
             catch(FileNotFoundException Fnfe)
             {
                 System.err.print("[ERREUR][LECTURE] : Fichier introuvable " + args[0] + ".");
                 System.exit(1);
             }
+            catch (IOException ex)
+            {
+                System.err.print("[ERREUR][LECTURE] : Fichier illisible " + args[0] + ".");
+                System.exit(1);
+            }
         }
         else
         {
-            System.err.println("[ERREUR][ARGUMENTS] :  0 ou 1 acceptés");
+            System.err.println("[ERREUR][ARGUMENTS] : 2 uniquement acceptés");
             System.exit(1);
         }
 
-        Node rootNode = null;
+        Start rootNodeO = null;
+        Start rootNodeT = null;
 
         try
         {
-            rootNode = new Parser(new Lexer(new PushbackReader(in))).parse();
-
+            rootNodeO = new Parser(new Lexer(new PushbackReader(original))).parse();
+            rootNodeT = new Parser(new Lexer(new PushbackReader(tested))).parse();
         }
         catch(IOException e)
         {
@@ -74,19 +85,29 @@ public class Program {
             System.exit(1);
         }
 
-        SyntaxicChecker checker = new SyntaxicChecker();
+        SyntaxicChecker checkerO = new SyntaxicChecker();
+        SyntaxicChecker checkerT = new SyntaxicChecker();
+
+
+        WidthSearch searcherO = new WidthSearch(args[0]);
+        WidthSearch searcherT = new WidthSearch(args[1]);
         try (PrintWriter pw = new PrintWriter("output.txt"))
         {
-            checker.Visit(rootNode);
-
-            pw.write(checker.GetClassTable().PrintClassTable());
-
+            checkerO.Visit(rootNodeO);
+            checkerT.Visit(rootNodeT);
+            searcherO.visit(rootNodeO.getPFile());
+            searcherT.visit(rootNodeT.getPFile());
+            Comparison.getInstance().oClassTable = checkerO._classTable;
+            Comparison.getInstance().tClassTable = checkerT._classTable;
+            Comparison.getInstance().original = searcherO.stats;
+            Comparison.getInstance().tested = searcherT.stats;
+            Comparison.getInstance().compare();
+            Comparison.getInstance().printOutput(pw);
         }
         catch(InterpreterException e)
         {
             System.out.flush();
             System.err.println("[ERREUR][INTERPRETEUR] : " + e.getMessage() + ".");
-            checker.PrintStackTrace();
             System.exit(1);
         }
         catch(SemanticException e)
