@@ -15,6 +15,9 @@ public class Tuple<L, R>
         this.right = right;
     }
 
-
-
+    @Override
+    public String toString()
+    {
+        return "Tuple<" + left.getClass().getName() + ", " + right.getClass().getName() + "> : [" + left.toString() + ", " + right.toString() + "]";
+    }
 }

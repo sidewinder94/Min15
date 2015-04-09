@@ -27,7 +27,6 @@ public class Comparison
     public ClassTable oClassTable;
     public ClassTable tClassTable;
 
-
     private List<Double> methodSimilarities;
     private Double methodNameSimilarities = 0.0d;
 
@@ -53,16 +52,17 @@ public class Comparison
 
         methodNumberSimilarity = computeMethodNumberSimilarity();
 
-
-        Tuple[] array = new Tuple[methodSimilarities.size() + 4];
+        int baseIndex = 5;
+        Tuple[] array = new Tuple[methodSimilarities.size() + baseIndex];
         array[0] = new Tuple<>(classNamesSimilarity, 1.0d);
         array[1] = new Tuple<>(classNumberSimilarity, 1.0d);
         array[2] = new Tuple<>(methodNumberSimilarity, 1.0d);
         array[3] = new Tuple<>(linesSimilarity, 2.0d);
+        array[4] = new Tuple<>(methodNameSimilarities, 2.0d);
 
-        for(int i = 4; i < array.length; i++)
+        for(int i = baseIndex; i < array.length; i++)
         {
-            array[i] = new Tuple<>(methodSimilarities.get(i-4), 1.0d);
+            array[i] = new Tuple<>(methodSimilarities.get(i-baseIndex), 1.0d);
         }
 
         average(array);
@@ -94,12 +94,18 @@ public class Comparison
             }
         }
         methodSimilarities = new LinkedList<>();
-        computeMethodSimilarities(commonClasses);
+        methodNameSimilarities = computeMethodSimilarities(commonClasses);
         return 100.0d - (((double)diffCount * 100.0d) / (double)larger.size());
     }
 
-    private void computeMethodSimilarities(Set<String> commonClasses)
+    private Double computeMethodSimilarities(Set<String> commonClasses)
     {
+        int oMethodNumber = oClassTable.getMethodNumber();
+        int tMethodNumber = tClassTable.getMethodNumber();
+
+        int commonMethods = 0;
+
+
         for(String name : commonClasses)
         {
             ClassInfo originalClass = oClassTable.Get(name);
@@ -108,12 +114,41 @@ public class Comparison
             Set<String> looper = originalSizeSuperior ? original.classNames.get(name) : tested.classNames.get(name);
             Set<String> against = originalSizeSuperior ? tested.classNames.get(name) : original.classNames.get(name);
 
+
             for(String methodName : looper)
             {
                 if(against.contains(methodName))
                 {
+
                     MethodInfo oMethod = originalClass.GetMethodTable().GetMethodInfo(methodName);
                     MethodInfo tMethod = testedClass.GetMethodTable().GetMethodInfo(methodName);
+
+                    Boolean allPresent = true;
+                    if(oMethod.GetParamCount() == tMethod.GetParamCount())
+                    {
+                        List<ClassInfo> params = new LinkedList<>();
+                        for(int i = 0; i < oMethod.GetParamCount(); i++)
+                        {
+                            params.add(oMethod.GetParamType(i));
+                        }
+
+                        for(int i = 0; i < tMethod.GetParamCount(); i++)
+                        {
+                            if(!params.remove(tMethod.GetParamType(i))) allPresent = false;
+                        }
+
+                        if(params.size() > 0) allPresent = false;
+
+                    }
+                    else
+                    {
+                        allPresent = false;
+                    }
+
+                    if(allPresent)
+                    {
+                        commonMethods++;
+                    }
 
                     try
                     {
@@ -123,6 +158,9 @@ public class Comparison
                 }
             }
         }
+
+
+        return (((double)commonMethods * 100.0d)/((double) ((oMethodNumber > tMethodNumber) ? oMethodNumber : tMethodNumber)));
     }
 
     private Double computeMethodSimilarity(MethodInfo original, MethodInfo tested) throws InvalidArgumentException

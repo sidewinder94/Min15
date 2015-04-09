@@ -52,6 +52,17 @@ public class ClassTable {
         return this._nameToClassInfoMap.get("Object");
     }
 
+    public int getMethodNumber()
+    {
+        int total = 0;
+        for(Map.Entry<String, ClassInfo> e : _nameToClassInfoMap.entrySet())
+        {
+            total += e.getValue().GetMethodTable().GetMethodNames().size();
+        }
+
+        return total;
+    }
+
 
     public ClassInfo Get(TClassName classNameToken)
     {
@@ -73,6 +84,7 @@ public class ClassTable {
 
         return this._nameToClassInfoMap.get(className);
     }
+
 
     public BooleanClassInfo GetBooleanClassInfoOrNull()
     {
