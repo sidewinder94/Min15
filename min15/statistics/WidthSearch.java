@@ -1,7 +1,7 @@
 package min15.statistics;
 
 import Utils.Tuple;
-import analysis.WidthFirstAdapter;
+import min15.analysis.WidthFirstAdapter;
 import min15.structure.FileStatistics;
 import node.*;
 

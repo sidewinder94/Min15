@@ -1,6 +1,6 @@
 package min15.statistics;
 
-import analysis.WidthFirstAdapter;
+import min15.analysis.WidthFirstAdapter;
 import node.*;
 import java.util.*;
 
