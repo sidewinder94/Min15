@@ -1,0 +1,12 @@
+Comparison between files : hello.min15 test.min15
+Global Similarity : 66.99396881435716 %
+Detailed Similarities : 
+ - Number of lines : 133.61650485436894 %
+ - Number Classes : 125.0 %
+ - Classes Names : 100.0 %
+ - Method Number : 133.33333333333334 %
+ - Token comparison for methods with same signature :
+    - Integer.factor : 12.5 %
+    - String.toString : 100.0 %
+    - String.concat : 100.0 %
+    - Object.print : 100.0 %
