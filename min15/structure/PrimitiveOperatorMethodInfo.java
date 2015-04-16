@@ -84,7 +84,7 @@ public class PrimitiveOperatorMethodInfo extends MethodInfo
             {
                 this._operation = Operation.INTEGER_LTEQ;
             }
-            else if(GetName().equals("=="))
+            else if(GetName().equals("="))
             {
                 this._operation = Operation.INTEGER_EQ;
             }
