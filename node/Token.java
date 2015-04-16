@@ -39,7 +39,6 @@ public abstract class Token extends Node
         this.pos = pos;
     }
 
-
     @Override
     public boolean equals(Object obj)
     {
