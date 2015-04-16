@@ -183,7 +183,7 @@ public class Comparison
                     try
                     {
                         methodSimilarities.add(computeMethodSimilarity(oMethod, tMethod));
-                        methodNames.add(oMethod.GetName());
+                        methodNames.add(oMethod.GetClassInfo().GetName() + "." + oMethod.GetName());
                     } catch (InvalidArgumentException e)
                     {}
                 }
@@ -204,6 +204,7 @@ public class Comparison
 
         int indexO = 0;
         int indexT = 0;
+        int currentStreak = 0;
         int longestMatchingTokens = 0;
 
         for(; indexO < originalList.size(); indexO++)
@@ -215,13 +216,18 @@ public class Comparison
 
                 if(originalList.get(indexO).equals(testedList.get(indexT)))
                 {
-                    longestMatchingTokens++;
+                    currentStreak++;
                     found = true;
                 }
             }
-            if(!found) indexT = 0;
+            if(!found)
+            {
+                indexT = 0;
+                if(currentStreak > longestMatchingTokens) longestMatchingTokens = currentStreak;
+                currentStreak = 0;
+            }
         }
-
+        if(currentStreak > longestMatchingTokens) longestMatchingTokens = currentStreak;
 
         int longest = (originalList.size() > testedList.size()) ? originalList.size() : testedList.size();
 
@@ -253,7 +259,7 @@ public class Comparison
     }
 
     /**
-     * @param values Left element of tuple is the value, left is ponderation
+     * @param values Left element of tuple is the value, right is ponderation
      */
     private void average(@SuppressWarnings("uncheked") Tuple<Double, Double>[] values)
     {
@@ -262,7 +268,7 @@ public class Comparison
 
         for(Tuple<Double, Double> v : values)
         {
-            result += v.left * v.right;
+            result += (v.left > 100.0d ? 100.0d - (v.left - 100.0d) : v.left) * v.right;
             total += v.right;
         }
 
