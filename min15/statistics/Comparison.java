@@ -21,29 +21,58 @@ public class Comparison
     public Double cheatProbability = 0.0d;
     public Double linesSimilarity = 0.0d;
 
+    private Boolean stringsEquals = false;
+
     public FileStatistics original;
     public FileStatistics tested;
 
     public ClassTable oClassTable;
     public ClassTable tClassTable;
 
+    private Double classNumberSimilarity = 0.0d;
+    private Double classNamesSimilarity = 0.0d;
+    private Double methodNumberSimilarity = 0.0d;
+
+    private List<String> methodNames;
     private List<Double> methodSimilarities;
     private Double methodNameSimilarities = 0.0d;
 
     public void printOutput(PrintWriter pw)
     {
-        throw new NotImplementedException();
+        pw.println("Comparison between files : " + original.filePath + " " + tested.filePath);
+        pw.println("Global Similarity : " + cheatProbability + " %");
+        if (!stringsEquals)
+        {
+            pw.println("Detailed Similarities : ");
+
+            pw.println(" - Number of lines : " + linesSimilarity + " %");
+            pw.println(" - Number Classes : " + classNumberSimilarity + " %");
+            pw.println(" - Classes Names : " + classNamesSimilarity + " %");
+            pw.println(" - Method Number : " + methodNumberSimilarity + " %");
+            pw.println(" - Token comparison for methods with same signature :");
+            for (int i = 0; i < methodNames.size(); i++)
+            {
+                pw.println("    - " + methodNames.get(i) + " : " + methodSimilarities.get(i) + " %");
+            }
+        }
+        else
+        {
+            pw.println("When removing comments and newlines it's the same program !");
+        }
+
     }
 
     public void compare()
     {
 
         //if cheat probability is already 100 or more, we are sure that the second file cheated on the first one no need to compute anything
-        //if(cheatProbability >= 100) return;
+        if(cheatProbability >= 100)
+        {
+            stringsEquals = true;
+            return;
+        }
 
-        Double classNumberSimilarity = 0.0d;
-        Double classNamesSimilarity = 0.0d;
-        Double methodNumberSimilarity = 0.0d;
+
 
 
         classNumberSimilarity = ((double)tested.classNames.size() * 100.0d) / (double)original.classNames.size();
@@ -94,6 +123,7 @@ public class Comparison
             }
         }
         methodSimilarities = new LinkedList<>();
+        methodNames = new LinkedList<>();
         methodNameSimilarities = computeMethodSimilarities(commonClasses);
         return 100.0d - (((double)diffCount * 100.0d) / (double)larger.size());
     }
@@ -153,6 +183,7 @@ public class Comparison
                     try
                     {
                         methodSimilarities.add(computeMethodSimilarity(oMethod, tMethod));
+                        methodNames.add(oMethod.GetName());
                     } catch (InvalidArgumentException e)
                     {}
                 }
