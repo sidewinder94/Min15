@@ -38,12 +38,12 @@ public class Program {
             }
             catch(FileNotFoundException Fnfe)
             {
-                System.err.print("[ERREUR][LECTURE] : Fichier introuvable " + args[0] + ".");
+                System.err.print("[ERREUR][LECTURE] : Fichier introuvable : " + Fnfe.getMessage() + ".");
                 System.exit(1);
             }
             catch (IOException ex)
             {
-                System.err.print("[ERREUR][LECTURE] : Fichier illisible " + args[0] + ".");
+                System.err.print("[ERREUR][LECTURE] : Fichier illisible : " + ex.getMessage() + ".");
                 System.exit(1);
             }
         }
@@ -63,14 +63,7 @@ public class Program {
         }
         catch(IOException e)
         {
-            String inputName = "de l'entrée standard";
-
-            if (args.length == 1)
-            {
-                inputName = "du fichier '" + args[1] + "'";
-            }
-
-            System.err.println("[ERREUR][LECTURE] : " + inputName + " : " + e.getMessage());
+            System.err.println("[ERREUR][LECTURE] : " + e.getMessage());
 
             System.exit(1);
         }
